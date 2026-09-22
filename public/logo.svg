@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" fill="none" stroke="#A75A32" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round">
+  <!-- Plate upper rim -->
+  <ellipse cx="75" cy="84" rx="30" ry="8" />
+  <!-- Plate inner rim/recess -->
+  <ellipse cx="75" cy="85" rx="20" ry="4.5" />
+  <!-- Plate lower rim depth line -->
+  <path d="M 55,88 Q 75,95 95,88" />
+  <!-- Fluid lower curve from plate to paw -->
+  <path d="M 42,103 C 41,120 62,126 84,124 C 104,122 114,110 119,102" />
+  <!-- Paw main pad -->
+  <path d="M 119,102 C 114,94 117,84 125,81 C 131,79 135,82 138,82 C 141,82 145,79 151,81 C 158,84 161,94 156,102 C 151,110 144,113 138,111 C 131,113 124,110 119,102 Z" />
+  <!-- Paw 4 toes -->
+  <!-- Toe 1 -->
+  <ellipse cx="111" cy="72" rx="5.5" ry="9" transform="rotate(-25 111 72)" />
+  <!-- Toe 2 -->
+  <ellipse cx="126" cy="62" rx="6" ry="10" transform="rotate(-8 126 62)" />
+  <!-- Toe 3 -->
+  <ellipse cx="145" cy="66" rx="6" ry="10" transform="rotate(18 145 66)" />
+  <!-- Toe 4 -->
+  <ellipse cx="159" cy="80" rx="5.5" ry="9" transform="rotate(35 159 80)" />
+</svg>

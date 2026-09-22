@@ -1,0 +1,6 @@
+{
+  "name": "Prato e Pata",
+  "description": "Portal de nutrição saudável para tutores e pets, lojinha com curadoria de produtos recomendados, blog interativo e guia alimentar.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
