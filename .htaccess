@@ -1,0 +1,18 @@
+# Hostinger Root Router - Transparently routes to /dist when document root is at project root
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+
+  # Don't rewrite if already requesting /dist/
+  RewriteCond %{REQUEST_URI} ^/dist/ [NC]
+  RewriteRule ^ - [L]
+
+  # If file exists in dist, rewrite to it
+  RewriteCond %{DOCUMENT_ROOT}/dist/$1 -f [OR]
+  RewriteCond %{DOCUMENT_ROOT}/dist/$1 -d
+  RewriteRule ^(.*)$ dist/$1 [L]
+
+  # Fallback: send all other requests to dist/index.html (React SPA)
+  RewriteCond %{REQUEST_FILENAME} !-f
+  RewriteCond %{REQUEST_FILENAME} !-d
+  RewriteRule ^(.*)$ dist/index.html [L]
+</IfModule>

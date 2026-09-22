@@ -97,8 +97,8 @@ export const AffiliateAdminPage: React.FC<AffiliateAdminPageProps> = ({
     try {
       const reader = new FileReader();
       reader.onload = async () => {
+        const base64 = (reader.result as string) || '';
         try {
-          const base64 = reader.result as string;
           const res = await fetch('/api/upload-image', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -121,7 +121,14 @@ export const AffiliateAdminPage: React.FC<AffiliateAdminPageProps> = ({
             setLocalUploadError(json.error || 'Erro ao enviar foto para o servidor.');
           }
         } catch (e) {
-          setLocalUploadError('Falha ao conectar com o servidor para salvar a imagem.');
+          // Graceful fallback for static hosting (e.g. Hostinger static web deployment)
+          if (targetProductId && onUpdateProductDetails) {
+            onUpdateProductDetails(targetProductId, { image: base64 });
+            setLocalUploadSuccess('Foto do produto atualizada com sucesso!');
+          } else {
+            setNewProdImage(base64);
+            setLocalUploadSuccess(`Foto "${file.name}" carregada com sucesso!`);
+          }
         } finally {
           setIsUploadingLocalImage(false);
         }

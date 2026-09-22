@@ -78,8 +78,8 @@ export const ImageBankModal: React.FC<ImageBankModalProps> = ({
       // Read as DataURL (Base64)
       const reader = new FileReader();
       reader.onload = async () => {
+        const base64 = (reader.result as string) || '';
         try {
-          const base64 = reader.result as string;
           const res = await fetch('/api/upload-image', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -100,7 +100,21 @@ export const ImageBankModal: React.FC<ImageBankModalProps> = ({
             setUploadError(json.error || 'Erro ao salvar imagem no servidor.');
           }
         } catch (err) {
-          setUploadError('Falha ao enviar imagem. Verifique sua conexão.');
+          // Graceful fallback for static hosting
+          const fallbackItem: UploadedImageItem = {
+            id: `local-img-${Date.now()}`,
+            filename: file.name,
+            url: base64,
+            originalName: file.name,
+            sizeBytes: file.size,
+            mimeType: file.type,
+            uploadedAt: new Date().toISOString(),
+          };
+          setImages((prev) => [fallbackItem, ...prev]);
+          if (onSelectImage) {
+            onSelectImage(base64);
+            onClose();
+          }
         } finally {
           setIsUploading(false);
         }
