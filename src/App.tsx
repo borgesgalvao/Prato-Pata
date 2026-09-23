@@ -10,7 +10,6 @@ import { ProductModal } from './components/ProductModal';
 import { ArticleModal } from './components/ArticleModal';
 import { Footer } from './components/Footer';
 import { AffiliateAdminPage } from './components/AffiliateAdminPage';
-import { LiveTextEditor } from './components/LiveTextEditor';
 
 export default function App() {
   const [activeTab, setActiveTab] = useState<'shop' | 'blog' | 'guide'>('blog');
@@ -82,6 +81,18 @@ export default function App() {
   useEffect(() => {
     localStorage.setItem('pratoepata_ml_clicks', JSON.stringify(affiliateClicks));
   }, [affiliateClicks]);
+
+  // Ensure designMode is disabled and purge old edit state
+  useEffect(() => {
+    if (typeof document !== 'undefined') {
+      document.designMode = 'off';
+      const oldStyle = document.getElementById('live-text-editor-styles');
+      if (oldStyle) oldStyle.remove();
+      try {
+        localStorage.removeItem('pratoepata_edit_mode');
+      } catch (e) {}
+    }
+  }, []);
 
   // Keyboard shortcut listener to toggle hidden admin mode (Alt + Shift + A or Ctrl + Shift + A)
   useEffect(() => {
@@ -317,9 +328,6 @@ export default function App() {
         onAddComment={handleAddComment}
         onReact={handleReactToArticle}
       />
-
-      {/* Live In-Place Text Editor */}
-      <LiveTextEditor />
 
       {/* Site Footer with hidden admin access */}
       <Footer 
