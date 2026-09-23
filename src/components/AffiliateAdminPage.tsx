@@ -4,7 +4,7 @@ import {
   Link2, Check, ExternalLink, Sparkles, Shield, 
   ArrowLeft, Search, Save, Plus, AlertCircle, Trash2, Eye, EyeOff, BarChart2,
   Loader2, RefreshCw, Zap, Image as ImageIcon, Upload, FolderOpen, Download,
-  FileJson, CheckCircle2, Copy
+  FileJson, CheckCircle2, Copy, X
 } from 'lucide-react';
 import { ImageBankModal } from './ImageBankModal';
 
@@ -137,6 +137,11 @@ export const AffiliateAdminPage: React.FC<AffiliateAdminPageProps> = ({
   const handleSaveAllToServer = async () => {
     setIsSyncingServer(true);
     try {
+      try {
+        localStorage.setItem('pratoepata_custom_products', JSON.stringify(products));
+        localStorage.setItem('pratoepata_catalog_version', String(Date.now()));
+      } catch (e) {}
+
       if (onSyncAllProducts) {
         onSyncAllProducts(products);
       }
@@ -146,15 +151,15 @@ export const AffiliateAdminPage: React.FC<AffiliateAdminPageProps> = ({
         body: JSON.stringify({ products }),
       });
       if (res.ok) {
-        setSyncFeedback('Catálogo sincronizado e gravado no arquivo public/data/products.json!');
+        setSyncFeedback('✅ Catálogo salvo nos arquivos public/data/products.json e src/data/products.ts! Pronto para publicar no GitHub/Hostinger.');
       } else {
-        setSyncFeedback('Catálogo atualizado com sucesso no navegador!');
+        setSyncFeedback('Catálogo atualizado no navegador! (Para publicar no GitHub/Hostinger, use o botão "Baixar products.json" ou sincronize pelo ambiente principal).');
       }
     } catch (e) {
       setSyncFeedback('Catálogo atualizado no navegador!');
     } finally {
       setIsSyncingServer(false);
-      setTimeout(() => setSyncFeedback(null), 4000);
+      setTimeout(() => setSyncFeedback(null), 5000);
     }
   };
 
@@ -644,8 +649,25 @@ export const AffiliateAdminPage: React.FC<AffiliateAdminPageProps> = ({
 
         {/* Add New Product Form with Automatic Mercado Livre Fetching */}
         {isAddingNew && (
-          <form onSubmit={handleCreateNewProduct} className="bg-white p-6 sm:p-8 rounded-3xl border-2 border-[#FFE600] shadow-md mb-8 space-y-5 animate-fadeIn">
-            <div className="flex items-center justify-between border-b border-[#EBE4D8] pb-3">
+          <form onSubmit={handleCreateNewProduct} className="bg-white p-6 sm:p-8 rounded-3xl border-2 border-[#FFE600] shadow-md mb-8 space-y-5 animate-fadeIn relative">
+            {/* Close button in top-right corner of new product frame */}
+            <button
+              id="close-new-product-frame-btn"
+              type="button"
+              onClick={() => {
+                setIsAddingNew(false);
+                setLastFetchedData(null);
+                setFetchMlSuccess(null);
+                setFetchMlError(null);
+              }}
+              aria-label="Fechar quadro de cadastro"
+              title="Fechar quadro de cadastro"
+              className="absolute top-5 right-5 w-9 h-9 rounded-full bg-[#FAF7F0] hover:bg-[#F2ECE1] text-[#6B655B] hover:text-[#2D2A26] border border-[#D5CDBD] flex items-center justify-center transition-all duration-200 active:scale-95 cursor-pointer shadow-xs z-10"
+            >
+              <X className="w-4 h-4" />
+            </button>
+
+            <div className="flex items-center justify-between border-b border-[#EBE4D8] pb-3 pr-12">
               <div className="flex items-center gap-2.5">
                 <div className="w-8 h-8 rounded-xl bg-[#FFE600] border border-[#E5CF00] flex items-center justify-center text-base font-bold text-[#2D3277]">
                   ⚡

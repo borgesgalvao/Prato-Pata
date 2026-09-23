@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 import { Product } from '../types';
-import { Star, CheckCircle2, ExternalLink } from 'lucide-react';
+import { Star, CheckCircle2, ExternalLink, X } from 'lucide-react';
 
 interface ProductModalProps {
   product: Product | null;
@@ -36,6 +36,18 @@ export const ProductModal: React.FC<ProductModalProps> = ({
         onClick={(e) => e.stopPropagation()}
         className="bg-white rounded-3xl max-w-3xl w-full max-h-[90vh] overflow-y-auto shadow-2xl border border-[#EBE4D8] relative cursor-default"
       >
+        {/* Close button in the top right corner */}
+        <button
+          id="close-product-modal-btn"
+          type="button"
+          onClick={onClose}
+          aria-label="Fechar janela de produto"
+          title="Fechar janela (Esc)"
+          className="absolute top-4 right-4 z-20 w-10 h-10 rounded-full bg-white/95 hover:bg-[#F2ECE1] text-[#6B655B] hover:text-[#2D2A26] border border-[#D5CDBD] shadow-sm flex items-center justify-center transition-all duration-200 active:scale-90 cursor-pointer"
+        >
+          <X className="w-5 h-5" />
+        </button>
+
         <div className="grid grid-cols-1 md:grid-cols-2">
           {/* Product Image and Button Directly Below */}
           <div className="bg-[#F5F2EB] p-6 flex flex-col justify-between gap-5 border-b md:border-b-0 md:border-r border-[#EBE4D8]">
@@ -79,7 +91,7 @@ export const ProductModal: React.FC<ProductModalProps> = ({
           </div>
 
           {/* Details */}
-          <div className="p-6 md:p-8 flex flex-col">
+          <div className="p-6 md:p-8 flex flex-col relative pr-14 md:pr-16">
             {/* Category tag */}
             <div className="flex items-center gap-2 mb-2">
               <span className="text-[11px] font-bold uppercase tracking-wider text-[#C87941] bg-[#FDF4EE] px-2.5 py-1 rounded-full border border-[#F6DECE]">

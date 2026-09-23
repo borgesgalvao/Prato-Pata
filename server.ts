@@ -52,6 +52,7 @@ function readProductsCatalog(): any[] {
 }
 
 function saveProductsCatalog(products: any[]) {
+  const version = Date.now();
   const publicDir = path.join(process.cwd(), 'public', 'data');
   if (!fs.existsSync(publicDir)) {
     fs.mkdirSync(publicDir, { recursive: true });
@@ -72,7 +73,7 @@ function saveProductsCatalog(products: any[]) {
 
   // Also update src/data/products.ts so future Vite builds automatically embed latest products
   try {
-    const tsCode = `import { Product } from '../types';\n\nexport const INITIAL_PRODUCTS: Product[] = ${JSON.stringify(products, null, 2)};\n`;
+    const tsCode = `import { Product } from '../types';\n\nexport const CATALOG_VERSION = ${version};\n\nexport const INITIAL_PRODUCTS: Product[] = ${JSON.stringify(products, null, 2)};\n`;
     fs.writeFileSync(path.join(process.cwd(), 'src', 'data', 'products.ts'), tsCode, 'utf-8');
   } catch (e) {
     console.warn('Error syncing src/data/products.ts:', e);

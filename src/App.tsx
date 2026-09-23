@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Product, BlogPost, BlogComment } from './types';
-import { INITIAL_PRODUCTS } from './data/products';
+import { INITIAL_PRODUCTS, CATALOG_VERSION } from './data/products';
 import { INITIAL_ARTICLES } from './data/articles';
 import { Header } from './components/Header';
 import { ShopSection } from './components/ShopSection';
@@ -70,8 +70,24 @@ export default function App() {
 
   const [products, setProducts] = useState<Product[]>(() => {
     const deletedIds = getDeletedProductIds();
+    const cleanInitial = INITIAL_PRODUCTS.filter(
+      (p) => !ELIMINATED_IDS.has(p.id) && !deletedIds.has(p.id) && Boolean(p.affiliateUrl && p.affiliateUrl.trim().length > 0)
+    );
+
     if (typeof window !== 'undefined') {
+      const savedVersion = parseInt(localStorage.getItem('pratoepata_catalog_version') || '0', 10);
       const saved = localStorage.getItem('pratoepata_custom_products');
+
+      // If this build has a newer CATALOG_VERSION (or first visit),
+      // update to cleanInitial immediately so newly deployed prices on Hostinger show at once!
+      if (!savedVersion || (typeof CATALOG_VERSION === 'number' && CATALOG_VERSION > savedVersion)) {
+        try {
+          localStorage.setItem('pratoepata_catalog_version', String(CATALOG_VERSION || Date.now()));
+          localStorage.setItem('pratoepata_custom_products', JSON.stringify(cleanInitial));
+        } catch (e) {}
+        return cleanInitial;
+      }
+
       if (saved) {
         try {
           const parsed = JSON.parse(saved);
@@ -85,13 +101,11 @@ export default function App() {
             }
           }
         } catch (e) {
-          // fallback to INITIAL_PRODUCTS
+          // fallback to cleanInitial
         }
       }
     }
-    return INITIAL_PRODUCTS.filter(
-      (p) => !ELIMINATED_IDS.has(p.id) && !deletedIds.has(p.id) && Boolean(p.affiliateUrl && p.affiliateUrl.trim().length > 0)
-    );
+    return cleanInitial;
   });
   const [articles, setArticles] = useState<BlogPost[]>(() => {
     const saved = localStorage.getItem('pratoepata_articles');
@@ -122,9 +136,10 @@ export default function App() {
     const fetchCatalog = async () => {
       try {
         let remoteProducts: Product[] | null = null;
+        const cacheBuster = `t=${Date.now()}`;
         // 1. Try Node API first
         try {
-          const res = await fetch('/api/products');
+          const res = await fetch(`/api/products?${cacheBuster}`, { cache: 'no-store' });
           if (res.ok) {
             const json = await res.json();
             if (json.success && Array.isArray(json.products) && json.products.length > 0) {
@@ -136,7 +151,7 @@ export default function App() {
         // 2. If API was unreachable (e.g. static hosting on Hostinger Apache), fetch static /data/products.json
         if (!remoteProducts) {
           try {
-            const staticRes = await fetch('/data/products.json');
+            const staticRes = await fetch(`/data/products.json?${cacheBuster}`, { cache: 'no-store' });
             if (staticRes.ok) {
               const staticJson = await staticRes.json();
               if (Array.isArray(staticJson) && staticJson.length > 0) {
@@ -154,16 +169,38 @@ export default function App() {
 
           if (validRemote.length > 0) {
             setProducts((current) => {
-              // If user already has local items (which include their edits and additions), do not overwrite them!
-              if (current && current.length > 0) {
-                const currentIds = new Set(current.map((p) => p.id));
-                const brandNewRemote = validRemote.filter((p) => !currentIds.has(p.id) && !deletedIds.has(p.id));
-                if (brandNewRemote.length > 0) {
-                  return [...current, ...brandNewRemote];
+              // Remote catalog (published to Hostinger) is authoritative for prices, originalPrices, images, titles and descriptions!
+              const remoteMap = new Map(validRemote.map((p) => [p.id, p]));
+
+              // 1. Update existing products with authoritative remote data
+              const updatedCurrent = current.map((p) => {
+                const remoteItem = remoteMap.get(p.id);
+                if (remoteItem) {
+                  return {
+                    ...p,
+                    price: remoteItem.price,
+                    originalPrice: remoteItem.originalPrice,
+                    name: remoteItem.name || p.name,
+                    image: remoteItem.image || p.image,
+                    shortDescription: remoteItem.shortDescription || p.shortDescription,
+                    fullDescription: remoteItem.fullDescription || p.fullDescription,
+                    affiliateUrl: remoteItem.affiliateUrl || p.affiliateUrl,
+                    inStock: remoteItem.inStock ?? p.inStock,
+                  };
                 }
-                return current;
-              }
-              return validRemote;
+                return p;
+              });
+
+              // 2. Add any newly added remote products not present in current
+              const currentIds = new Set(current.map((p) => p.id));
+              const brandNewRemote = validRemote.filter((p) => !currentIds.has(p.id) && !deletedIds.has(p.id));
+
+              const merged = [...updatedCurrent, ...brandNewRemote];
+              try {
+                localStorage.setItem('pratoepata_custom_products', JSON.stringify(merged));
+                localStorage.setItem('pratoepata_catalog_version', String(Date.now()));
+              } catch (e) {}
+              return merged;
             });
           }
         }
