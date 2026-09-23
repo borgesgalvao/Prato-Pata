@@ -1,6 +1,6 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Product } from '../types';
-import { X, Star, CheckCircle2, ExternalLink } from 'lucide-react';
+import { Star, CheckCircle2, ExternalLink } from 'lucide-react';
 
 interface ProductModalProps {
   product: Product | null;
@@ -13,31 +13,69 @@ export const ProductModal: React.FC<ProductModalProps> = ({
   onClose,
   onTrackAffiliateClick,
 }) => {
+  // Close on Escape key press
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        onClose();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [onClose]);
+
   if (!product) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-fadeIn">
+    <div 
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-fadeIn cursor-pointer"
+      onClick={onClose}
+    >
       <div 
         id="product-modal-container"
-        className="bg-white rounded-3xl max-w-3xl w-full max-h-[90vh] overflow-y-auto shadow-2xl border border-[#EBE4D8] relative"
+        onClick={(e) => e.stopPropagation()}
+        className="bg-white rounded-3xl max-w-3xl w-full max-h-[90vh] overflow-y-auto shadow-2xl border border-[#EBE4D8] relative cursor-default"
       >
-        {/* Close Button */}
-        <button
-          id="close-product-modal-btn"
-          onClick={onClose}
-          className="absolute top-4 right-4 z-10 w-9 h-9 rounded-full bg-white/80 hover:bg-white text-[#544F46] hover:text-[#2D2A26] flex items-center justify-center shadow-md border border-[#EBE4D8] transition-colors"
-        >
-          <X className="w-5 h-5" />
-        </button>
-
         <div className="grid grid-cols-1 md:grid-cols-2">
-          {/* Product Image */}
-          <div className="relative aspect-square md:aspect-auto bg-[#F5F2EB] p-6 flex items-center justify-center">
-            <img
-              src={product.image}
-              alt={product.name}
-              className="w-full h-full object-cover rounded-2xl max-h-96 shadow-sm"
-            />
+          {/* Product Image and Button Directly Below */}
+          <div className="bg-[#F5F2EB] p-6 flex flex-col justify-between gap-5 border-b md:border-b-0 md:border-r border-[#EBE4D8]">
+            <div className="relative aspect-square flex items-center justify-center overflow-hidden rounded-2xl bg-white border border-[#EBE4D8]">
+              <img
+                src={product.image}
+                alt={product.name}
+                className="w-full h-full object-cover max-h-80 shadow-xs"
+              />
+            </div>
+
+            {/* Recommendation Button directly below the image */}
+            <div className="w-full">
+              {product.affiliateUrl ? (
+                <>
+                  <a
+                    id={`modal-recommendation-link-${product.id}`}
+                    href={product.affiliateUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    onClick={() => {
+                      if (onTrackAffiliateClick) {
+                        onTrackAffiliateClick(product.id);
+                      }
+                    }}
+                    className="w-full py-3.5 px-5 bg-[#FFE600] hover:bg-[#F2DA00] text-[#2D3277] font-extrabold text-sm rounded-xl transition-all duration-200 flex items-center justify-center gap-2 shadow-xs border border-[#E5CF00] active:scale-95 cursor-pointer"
+                  >
+                    <span>Ver no Mercado Livre</span>
+                    <ExternalLink className="w-4 h-4" />
+                  </a>
+                  <p className="text-[11px] text-[#8C8375] text-center mt-2.5 leading-tight">
+                    Indicação Prato & Pata • Você será direcionado para o produto na plataforma parceira.
+                  </p>
+                </>
+              ) : (
+                <div className="py-3 px-4 bg-white/80 border border-[#EBE4D8] rounded-xl text-center text-xs font-medium text-[#6B655B]">
+                  Produto selecionado e indicado pela curadoria independente Prato & Pata.
+                </div>
+              )}
+            </div>
           </div>
 
           {/* Details */}
@@ -96,40 +134,10 @@ export const ProductModal: React.FC<ProductModalProps> = ({
             </div>
 
             {/* Specs */}
-            <div className="text-[11px] text-[#6B655B] space-y-1 mb-6">
+            <div className="text-[11px] text-[#6B655B] space-y-1">
               <p><strong>Composição/Material:</strong> {product.specs.materialOuComposicao}</p>
               <p><strong>Indicação:</strong> {product.specs.indicacao}</p>
               <p><strong>Cuidados:</strong> {product.specs.cuidados}</p>
-            </div>
-
-            {/* Product Recommendation Action */}
-            <div className="mt-auto pt-4 border-t border-[#F2ECE1]">
-              {product.affiliateUrl ? (
-                <>
-                  <a
-                    id={`modal-recommendation-link-${product.id}`}
-                    href={product.affiliateUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    onClick={() => {
-                      if (onTrackAffiliateClick) {
-                        onTrackAffiliateClick(product.id);
-                      }
-                    }}
-                    className="w-full py-3.5 px-5 bg-[#FFE600] hover:bg-[#F2DA00] text-[#2D3277] font-extrabold text-sm rounded-xl transition-all duration-200 flex items-center justify-center gap-2 shadow-xs border border-[#E5CF00] active:scale-95"
-                  >
-                    <span>Ver no Mercado Livre</span>
-                    <ExternalLink className="w-4 h-4" />
-                  </a>
-                  <p className="text-[11px] text-[#8C8375] text-center mt-2.5 leading-tight">
-                    Indicação Prato & Pata • Você será direcionado para o produto na plataforma parceira.
-                  </p>
-                </>
-              ) : (
-                <div className="py-3 px-4 bg-[#FAF7F0] border border-[#EBE4D8] rounded-xl text-center text-xs font-medium text-[#6B655B]">
-                  Produto selecionado e indicado pela curadoria independente Prato & Pata.
-                </div>
-              )}
             </div>
           </div>
         </div>

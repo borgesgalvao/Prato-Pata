@@ -96,51 +96,51 @@ export const ShopSection: React.FC<ShopSectionProps> = ({
 
   return (
     <section id="shop-main-section" className="py-6 sm:py-8 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-      {/* Sticky Header with Target Audience, Categories, and Search/Filters Toolbar */}
+      {/* Sticky Header with Target Audience, Categories, and Search/Filters Toolbar (Compact on mobile) */}
       <div
         id="shop-fixed-header"
         style={{ top: `${headerHeight}px` }}
-        className="sticky z-20 bg-[#FBF9F5]/95 backdrop-blur-md -mx-4 px-4 sm:-mx-6 sm:px-6 lg:-mx-8 lg:px-8 pt-3 pb-3 mb-6 border-b border-[#EBE4D8] transition-all shadow-xs"
+        className="relative sm:sticky sm:z-20 bg-[#FBF9F5]/95 backdrop-blur-md -mx-4 px-3 sm:-mx-6 sm:px-6 lg:-mx-8 lg:px-8 py-2 sm:py-3 mb-3 sm:mb-6 border-b border-[#EBE4D8] transition-all shadow-xs"
       >
         {/* Target Audience Switcher Pills */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-3">
-          <div>
-            <h2 className="font-serif-brand text-xl sm:text-2xl font-bold text-[#2D2A26] leading-tight">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1.5 sm:gap-3 mb-2 sm:mb-3">
+          <div className="flex items-center justify-between">
+            <h2 className="font-serif-brand text-base sm:text-2xl font-bold text-[#2D2A26] leading-tight">
               Lojinha Prato & Pata
             </h2>
-            <p className="text-[11px] text-[#6B655B]">
+            <p className="text-[11px] text-[#6B655B] hidden sm:block">
               Navegue por quem vai desfrutar da alimentação saudável hoje
             </p>
           </div>
 
-          <div className="flex items-center gap-1.5 bg-[#EFEAE1] p-1 rounded-xl border border-[#E0D8C8] overflow-x-auto shrink-0">
+          <div className="flex items-center gap-1 bg-[#EFEAE1] p-0.5 sm:p-1 rounded-xl border border-[#E0D8C8] overflow-x-auto no-scrollbar shrink-0">
             <button
               id="filter-audience-todos"
               onClick={() => setSelectedAudience('todos')}
-              className={`px-3 py-1 rounded-lg text-xs font-bold transition-all whitespace-nowrap ${
+              className={`px-2.5 py-1 rounded-lg text-[11px] sm:text-xs font-bold transition-all whitespace-nowrap ${
                 selectedAudience === 'todos'
                   ? 'bg-white text-[#2D2A26] shadow-xs'
                   : 'text-[#6B655B] hover:text-[#2D2A26]'
               }`}
             >
-              Todos os Públicos
+              Todos
             </button>
             <button
               id="filter-audience-pet"
               onClick={() => setSelectedAudience('pet')}
-              className={`px-3 py-1 rounded-lg text-xs font-bold transition-all whitespace-nowrap flex items-center gap-1 ${
+              className={`px-2.5 py-1 rounded-lg text-[11px] sm:text-xs font-bold transition-all whitespace-nowrap flex items-center gap-1 ${
                 selectedAudience === 'pet'
                   ? 'bg-[#24572D] text-white shadow-xs'
                   : 'text-[#6B655B] hover:text-[#2D2A26]'
               }`}
             >
               <span>🐾</span>
-              <span>Para Pets</span>
+              <span>Pets</span>
             </button>
             <button
               id="filter-audience-tutor"
               onClick={() => setSelectedAudience('tutor')}
-              className={`px-3 py-1 rounded-lg text-xs font-bold transition-all whitespace-nowrap flex items-center gap-1 ${
+              className={`px-2.5 py-1 rounded-lg text-[11px] sm:text-xs font-bold transition-all whitespace-nowrap flex items-center gap-1 ${
                 selectedAudience === 'tutor'
                   ? 'bg-[#C87941] text-white shadow-xs'
                   : 'text-[#6B655B] hover:text-[#2D2A26]'
@@ -152,7 +152,7 @@ export const ShopSection: React.FC<ShopSectionProps> = ({
             <button
               id="filter-audience-duo"
               onClick={() => setSelectedAudience('duo')}
-              className={`px-3 py-1 rounded-lg text-xs font-bold transition-all whitespace-nowrap flex items-center gap-1 ${
+              className={`px-2.5 py-1 rounded-lg text-[11px] sm:text-xs font-bold transition-all whitespace-nowrap flex items-center gap-1 ${
                 selectedAudience === 'duo'
                   ? 'bg-[#1E4D70] text-white shadow-xs'
                   : 'text-[#6B655B] hover:text-[#2D2A26]'
@@ -165,13 +165,13 @@ export const ShopSection: React.FC<ShopSectionProps> = ({
         </div>
 
         {/* Category Horizontal Scrolling List */}
-        <div className="flex items-center gap-2 overflow-x-auto pb-2 mb-3 no-scrollbar">
+        <div className="flex items-center gap-1.5 sm:gap-2 overflow-x-auto pb-1 sm:pb-2 mb-2 sm:mb-3 no-scrollbar">
           {categories.map((cat) => (
             <button
               key={cat.id}
               id={`filter-category-${cat.id}`}
               onClick={() => setSelectedCategory(cat.id)}
-              className={`px-3.5 py-1.5 rounded-xl text-xs font-semibold whitespace-nowrap flex items-center gap-1.5 border transition-all duration-200 ${
+              className={`px-2.5 py-1 sm:px-3.5 sm:py-1.5 rounded-lg sm:rounded-xl text-[11px] sm:text-xs font-semibold whitespace-nowrap flex items-center gap-1 border transition-all duration-200 ${
                 selectedCategory === cat.id
                   ? 'bg-[#435B47] text-white border-[#435B47] shadow-xs'
                   : 'bg-white text-[#544F46] border-[#EBE4D8] hover:border-[#D5CDBD] hover:bg-[#FAF7F0]'
@@ -184,35 +184,33 @@ export const ShopSection: React.FC<ShopSectionProps> = ({
         </div>
 
         {/* Toolbar: Active Search Indicator, Price Slider & Sort */}
-        <div className="bg-white/95 p-2.5 sm:p-3 rounded-xl border border-[#EBE4D8] shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-3">
+        <div className="bg-white/95 px-2.5 py-1.5 sm:p-3 rounded-xl border border-[#EBE4D8] shadow-xs flex flex-wrap items-center justify-between gap-2">
           {/* Active search filter status */}
-          <div className="flex-1">
-            {searchQuery ? (
-              <div className="inline-flex items-center gap-2 bg-[#EFEAE1] border border-[#E0D8C8] px-3.5 py-1.5 rounded-full text-xs text-[#2D2A26]">
-                <Search className="w-3.5 h-3.5 text-[#435B47]" />
-                <span>
-                  Filtrando produtos por: <strong className="text-[#435B47]">"{searchQuery}"</strong> ({filteredProducts.length})
-                </span>
-                <button
-                  type="button"
-                  onClick={() => setSearchQuery('')}
-                  className="text-[#877E71] hover:text-[#2D2A26] font-bold text-xs p-0.5 rounded-full hover:bg-[#E0D8C8] transition-colors cursor-pointer"
-                  title="Limpar busca"
-                >
-                  <X className="w-3.5 h-3.5" />
-                </button>
-              </div>
-            ) : (
-              <span className="text-xs text-[#877E71] font-medium hidden sm:inline">
-                Filtrar por valor e relevância:
+          {searchQuery ? (
+            <div className="inline-flex items-center gap-1.5 bg-[#EFEAE1] border border-[#E0D8C8] px-2.5 py-1 rounded-full text-[11px] text-[#2D2A26]">
+              <Search className="w-3 h-3 text-[#435B47]" />
+              <span className="line-clamp-1 max-w-[140px] sm:max-w-none">
+                Filtrando: <strong className="text-[#435B47]">"{searchQuery}"</strong> ({filteredProducts.length})
               </span>
-            )}
-          </div>
+              <button
+                type="button"
+                onClick={() => setSearchQuery('')}
+                className="text-[#877E71] hover:text-[#2D2A26] font-bold text-xs p-0.5 rounded-full hover:bg-[#E0D8C8] transition-colors cursor-pointer"
+                title="Limpar busca"
+              >
+                <X className="w-3 h-3" />
+              </button>
+            </div>
+          ) : (
+            <span className="text-[11px] text-[#877E71] font-medium hidden sm:inline">
+              Filtrar por valor e relevância:
+            </span>
+          )}
 
-          {/* Controls: Max price & Sorting */}
-          <div className="flex flex-wrap items-center gap-3 text-xs">
-            <div className="flex items-center gap-2">
-              <span className="text-[#6B655B] font-medium text-[11px]">Preço até:</span>
+          {/* Controls: Max price & Sorting in one compact line */}
+          <div className="flex items-center justify-between w-full sm:w-auto gap-2 text-xs ml-auto">
+            <div className="flex items-center gap-1.5">
+              <span className="text-[#6B655B] font-medium text-[11px] whitespace-nowrap">Até:</span>
               <input
                 id="shop-price-slider"
                 type="range"
@@ -221,20 +219,20 @@ export const ShopSection: React.FC<ShopSectionProps> = ({
                 step="10"
                 value={maxPrice}
                 onChange={(e) => setMaxPrice(Number(e.target.value))}
-                className="w-20 accent-[#435B47] cursor-pointer"
+                className="w-16 sm:w-20 accent-[#435B47] cursor-pointer"
               />
-              <span className="font-bold text-[#2D2A26] min-w-[50px] text-xs">
+              <span className="font-bold text-[#2D2A26] text-[11px] whitespace-nowrap min-w-[46px]">
                 R$ {maxPrice}
               </span>
             </div>
 
-            <div className="flex items-center gap-1.5">
-              <span className="text-[#6B655B] font-medium text-[11px]">Ordenar:</span>
+            <div className="flex items-center gap-1">
+              <span className="text-[#6B655B] font-medium text-[11px] hidden sm:inline">Ordenar:</span>
               <select
                 id="shop-sort-select"
                 value={sortBy}
                 onChange={(e) => setSortBy(e.target.value as any)}
-                className="bg-[#FAF7F0] border border-[#E0D8C8] rounded-lg px-2 py-1 text-xs text-[#2D2A26] font-semibold focus:outline-none focus:ring-2 focus:ring-[#435B47]"
+                className="bg-[#FAF7F0] border border-[#E0D8C8] rounded-lg px-2 py-1 text-[11px] sm:text-xs text-[#2D2A26] font-semibold focus:outline-none focus:ring-1 focus:ring-[#435B47]"
               >
                 <option value="relevance">Destaques</option>
                 <option value="price-asc">Menor Preço</option>
