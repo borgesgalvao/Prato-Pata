@@ -32,20 +32,53 @@ export default function App() {
     return { 'prod-1': 14, 'prod-2': 22, 'prod-3': 31, 'prod-5': 9 };
   });
 
+  const ELIMINATED_IDS = new Set([
+    'prod-1', 'prod-2', 'prod-3', 'prod-4', 'prod-5', 
+    'prod-6', 'prod-7', 'prod-8', 'prod-9', 'prod-10', 'prod-11', 'prod-12'
+  ]);
+
+  const getDeletedProductIds = (): Set<string> => {
+    if (typeof window === 'undefined') return new Set();
+    try {
+      const stored = localStorage.getItem('pratoepata_deleted_ids');
+      if (stored) {
+        return new Set(JSON.parse(stored));
+      }
+    } catch (e) {}
+    return new Set<string>();
+  };
+
+  const addDeletedProductId = (id: string) => {
+    if (typeof window === 'undefined') return;
+    try {
+      const current = getDeletedProductIds();
+      current.add(id);
+      localStorage.setItem('pratoepata_deleted_ids', JSON.stringify(Array.from(current)));
+    } catch (e) {}
+  };
+
+  const removeDeletedProductId = (id: string) => {
+    if (typeof window === 'undefined') return;
+    try {
+      const current = getDeletedProductIds();
+      if (current.has(id)) {
+        current.delete(id);
+        localStorage.setItem('pratoepata_deleted_ids', JSON.stringify(Array.from(current)));
+      }
+    } catch (e) {}
+  };
+
   const [products, setProducts] = useState<Product[]>(() => {
-    const ELIMINATED_IDS = new Set([
-      'prod-1', 'prod-2', 'prod-3', 'prod-4', 'prod-5', 
-      'prod-6', 'prod-7', 'prod-8', 'prod-9', 'prod-10', 'prod-11', 'prod-12'
-    ]);
+    const deletedIds = getDeletedProductIds();
     if (typeof window !== 'undefined') {
       const saved = localStorage.getItem('pratoepata_custom_products');
       if (saved) {
         try {
           const parsed = JSON.parse(saved);
           if (Array.isArray(parsed) && parsed.length > 0) {
-            // Filter out old legacy dummy items and ensure active Mercado Livre url
+            // Filter out old legacy dummy items and any deleted items
             const activeOnly = parsed.filter(
-              (p: Product) => !ELIMINATED_IDS.has(p.id) && Boolean(p.affiliateUrl && p.affiliateUrl.trim().length > 0)
+              (p: Product) => !ELIMINATED_IDS.has(p.id) && !deletedIds.has(p.id) && Boolean(p.affiliateUrl && p.affiliateUrl.trim().length > 0)
             );
             if (activeOnly.length > 0) {
               return activeOnly;
@@ -56,7 +89,9 @@ export default function App() {
         }
       }
     }
-    return INITIAL_PRODUCTS;
+    return INITIAL_PRODUCTS.filter(
+      (p) => !ELIMINATED_IDS.has(p.id) && !deletedIds.has(p.id) && Boolean(p.affiliateUrl && p.affiliateUrl.trim().length > 0)
+    );
   });
   const [articles, setArticles] = useState<BlogPost[]>(() => {
     const saved = localStorage.getItem('pratoepata_articles');
@@ -112,12 +147,23 @@ export default function App() {
         }
 
         if (remoteProducts && remoteProducts.length > 0 && isMounted) {
-          const validRemote = remoteProducts.filter((p) => Boolean(p.affiliateUrl && p.affiliateUrl.trim().length > 0));
+          const deletedIds = getDeletedProductIds();
+          const validRemote = remoteProducts.filter(
+            (p) => !ELIMINATED_IDS.has(p.id) && !deletedIds.has(p.id) && Boolean(p.affiliateUrl && p.affiliateUrl.trim().length > 0)
+          );
+
           if (validRemote.length > 0) {
             setProducts((current) => {
-              const remoteIds = new Set(validRemote.map((p) => p.id));
-              const localCustomOnly = current.filter((p) => !remoteIds.has(p.id) && p.id.startsWith('ml-prod-'));
-              return [...localCustomOnly, ...validRemote];
+              // If user already has local items (which include their edits and additions), do not overwrite them!
+              if (current && current.length > 0) {
+                const currentIds = new Set(current.map((p) => p.id));
+                const brandNewRemote = validRemote.filter((p) => !currentIds.has(p.id) && !deletedIds.has(p.id));
+                if (brandNewRemote.length > 0) {
+                  return [...current, ...brandNewRemote];
+                }
+                return current;
+              }
+              return validRemote;
             });
           }
         }
@@ -233,6 +279,7 @@ export default function App() {
     };
 
     setProducts((prev) => [newFullProduct, ...prev]);
+    removeDeletedProductId(newFullProduct.id);
 
     try {
       // 1. Write product to server persistent catalog file (products.json)
@@ -285,6 +332,7 @@ export default function App() {
   };
 
   const handleDeleteProduct = async (productId: string) => {
+    addDeletedProductId(productId);
     setProducts((prev) => prev.filter((p) => p.id !== productId));
     try {
       await fetch(`/api/products/${productId}`, {
@@ -295,6 +343,20 @@ export default function App() {
   };
 
   const handleSyncAllProducts = async (newProductsList: Product[]) => {
+    // When syncing a whole new list, clear deleted status for items included in the new list
+    const newIds = new Set(newProductsList.map((p) => p.id));
+    const currentDeleted = getDeletedProductIds();
+    let changed = false;
+    newIds.forEach((id) => {
+      if (currentDeleted.has(id)) {
+        currentDeleted.delete(id);
+        changed = true;
+      }
+    });
+    if (changed && typeof window !== 'undefined') {
+      localStorage.setItem('pratoepata_deleted_ids', JSON.stringify(Array.from(currentDeleted)));
+    }
+
     setProducts(newProductsList);
     try {
       const res = await fetch('/api/products/sync-all', {

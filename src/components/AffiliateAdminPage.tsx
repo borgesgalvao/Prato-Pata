@@ -4,7 +4,7 @@ import {
   Link2, Check, ExternalLink, Sparkles, Shield, 
   ArrowLeft, Search, Save, Plus, AlertCircle, Trash2, Eye, EyeOff, BarChart2,
   Loader2, RefreshCw, Zap, Image as ImageIcon, Upload, FolderOpen, Download,
-  FileJson, CheckCircle2
+  FileJson, CheckCircle2, Copy
 } from 'lucide-react';
 import { ImageBankModal } from './ImageBankModal';
 
@@ -152,6 +152,18 @@ export const AffiliateAdminPage: React.FC<AffiliateAdminPageProps> = ({
       setSyncFeedback('Catálogo atualizado no navegador!');
     } finally {
       setIsSyncingServer(false);
+      setTimeout(() => setSyncFeedback(null), 4000);
+    }
+  };
+
+  const handleCopyCatalogJson = async () => {
+    try {
+      const jsonStr = JSON.stringify(products, null, 2);
+      await navigator.clipboard.writeText(jsonStr);
+      setSyncFeedback('✅ JSON com todos os produtos copiado com sucesso! Você pode colar no chat para sincronização com o GitHub.');
+      setTimeout(() => setSyncFeedback(null), 5000);
+    } catch (e) {
+      setSyncFeedback('Copie o conteúdo baixando o arquivo products.json.');
       setTimeout(() => setSyncFeedback(null), 4000);
     }
   };
@@ -470,7 +482,7 @@ export const AffiliateAdminPage: React.FC<AffiliateAdminPageProps> = ({
               <div>
                 <div className="flex items-center gap-2 flex-wrap">
                   <h2 className="font-bold text-[#2D2A26] text-sm sm:text-base">
-                    Sincronização & Persistência na Hospedagem
+                    Sincronização & Publicação no GitHub e Hostinger
                   </h2>
                   <span className="bg-[#E3EFE6] text-[#24572D] text-[11px] font-bold px-2.5 py-0.5 rounded-full border border-[#C2E0C8] flex items-center gap-1">
                     <CheckCircle2 className="w-3.5 h-3.5 text-[#24572D]" />
@@ -478,8 +490,7 @@ export const AffiliateAdminPage: React.FC<AffiliateAdminPageProps> = ({
                   </span>
                 </div>
                 <p className="text-xs text-[#6B655B] mt-1 leading-relaxed max-w-2xl">
-                  Seus produtos cadastrados são salvos no arquivo estático <code className="bg-white px-1.5 py-0.5 rounded border border-[#D5CDBD] text-[#435B47] font-semibold text-[11px]">public/data/products.json</code>. 
-                  Ao enviar o site para sua hospedagem (Hostinger), todos os visitantes verão a lojinha com os produtos imediatamente.
+                  Seus produtos cadastrados, editados ou excluídos são gravados em <code className="bg-white px-1.5 py-0.5 rounded border border-[#D5CDBD] text-[#435B47] font-semibold text-[11px]">public/data/products.json</code> e <code className="bg-white px-1.5 py-0.5 rounded border border-[#D5CDBD] text-[#435B47] font-semibold text-[11px]">src/data/products.ts</code>. Ao publicar no GitHub, a Hostinger compila estes arquivos e a vitrine entra no ar para todos os visitantes.
                 </p>
               </div>
             </div>
@@ -492,6 +503,16 @@ export const AffiliateAdminPage: React.FC<AffiliateAdminPageProps> = ({
                 accept=".json,application/json" 
                 className="hidden" 
               />
+
+              <button
+                type="button"
+                onClick={handleCopyCatalogJson}
+                className="bg-white hover:bg-[#F2ECE1] text-[#2D2A26] border border-[#C2B7A3] px-3.5 py-2 rounded-xl text-xs font-bold flex items-center gap-1.5 shadow-xs transition-colors cursor-pointer"
+                title="Copiar JSON do catálogo completo para colar no chat"
+              >
+                <Copy className="w-3.5 h-3.5 text-[#435B47]" />
+                <span>Copiar JSON</span>
+              </button>
 
               <button
                 type="button"
