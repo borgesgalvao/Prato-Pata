@@ -1,10 +1,17 @@
 import React, { useState } from 'react';
 import { FOOD_CHECK_DATABASE } from '../data/foodChecker';
 import { FoodCheckItem } from '../types';
-import { Search, ShieldAlert, CheckCircle2, AlertTriangle, Sparkles, Filter } from 'lucide-react';
+import { Search, ShieldAlert, CheckCircle2, AlertTriangle, Sparkles, Filter, X } from 'lucide-react';
 
-export const InteractiveFoodGuide: React.FC = () => {
-  const [searchTerm, setSearchTerm] = useState('');
+interface InteractiveFoodGuideProps {
+  searchQuery?: string;
+  onClearSearch?: () => void;
+}
+
+export const InteractiveFoodGuide: React.FC<InteractiveFoodGuideProps> = ({
+  searchQuery = '',
+  onClearSearch,
+}) => {
   const [selectedCategory, setSelectedCategory] = useState<string>('todos');
   const [safetyFilter, setSafetyFilter] = useState<'todos' | 'seguro' | 'proibido'>('todos');
 
@@ -28,12 +35,13 @@ export const InteractiveFoodGuide: React.FC = () => {
         return false;
       }
     }
-    if (searchTerm.trim() !== '') {
-      const q = searchTerm.toLowerCase();
+    if (searchQuery.trim() !== '') {
+      const q = searchQuery.toLowerCase().trim();
       const matchName = item.name.toLowerCase().includes(q);
       const matchPet = item.petNotes.toLowerCase().includes(q);
       const matchHuman = item.humanBenefits.toLowerCase().includes(q);
-      if (!matchName && !matchPet && !matchHuman) return false;
+      const matchPrep = item.preparationTip.toLowerCase().includes(q);
+      if (!matchName && !matchPet && !matchHuman && !matchPrep) return false;
     }
     return true;
   });
@@ -79,18 +87,27 @@ export const InteractiveFoodGuide: React.FC = () => {
 
       {/* Interactive Search & Filter Controls */}
       <div className="bg-white p-5 rounded-3xl border border-[#EBE4D8] shadow-xs mb-8 space-y-4">
-        {/* Search input */}
-        <div className="relative max-w-2xl mx-auto">
-          <input
-            id="food-guide-search-input"
-            type="text"
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            placeholder="Ex: Cenoura, Chocolate, Abóbora, Maçã, Alho..."
-            className="w-full bg-[#FAF7F0] border border-[#D5CDBD] rounded-2xl pl-10 pr-4 py-3 text-sm text-[#2D2A26] placeholder-[#877E71] focus:ring-2 focus:ring-[#435B47] focus:bg-white focus:outline-none"
-          />
-          <Search className="w-5 h-5 text-[#877E71] absolute left-3.5 top-1/2 -translate-y-1/2" />
-        </div>
+        {searchQuery.trim() !== '' && (
+          <div className="flex items-center justify-between bg-[#EFEAE1] border border-[#E0D8C8] rounded-2xl px-4 py-2.5 text-xs text-[#2D2A26]">
+            <div className="flex items-center gap-2">
+              <Search className="w-4 h-4 text-[#435B47]" />
+              <span>
+                Filtrando alimentos por: <strong className="text-[#435B47]">"{searchQuery}"</strong> ({filteredFoods.length} encontrados)
+              </span>
+            </div>
+            {onClearSearch && (
+              <button
+                type="button"
+                onClick={onClearSearch}
+                className="flex items-center gap-1 text-[#877E71] hover:text-[#2D2A26] font-bold text-xs bg-white px-2.5 py-1 rounded-full border border-[#D5CDBD] shadow-2xs hover:bg-[#FAF7F0] transition-colors cursor-pointer"
+                title="Limpar busca"
+              >
+                <X className="w-3.5 h-3.5" />
+                <span>Limpar filtro</span>
+              </button>
+            )}
+          </div>
+        )}
 
         {/* Filter Categories */}
         <div className="flex flex-wrap items-center justify-between gap-3 pt-2">

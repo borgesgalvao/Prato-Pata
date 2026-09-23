@@ -1,7 +1,7 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { Product, ProductCategory, TargetAudience } from '../types';
 import { ProductCard } from './ProductCard';
-import { SlidersHorizontal, Search, Check, RefreshCw } from 'lucide-react';
+import { SlidersHorizontal, Search, Check, RefreshCw, X } from 'lucide-react';
 
 interface ShopSectionProps {
   products: Product[];
@@ -183,26 +183,29 @@ export const ShopSection: React.FC<ShopSectionProps> = ({
           ))}
         </div>
 
-        {/* Toolbar: Search input, Price Slider & Sort */}
+        {/* Toolbar: Active Search Indicator, Price Slider & Sort */}
         <div className="bg-white/95 p-2.5 sm:p-3 rounded-xl border border-[#EBE4D8] shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-3">
-          {/* Search inside shop */}
-          <div className="relative flex-1 max-w-md">
-            <input
-              id="shop-search-input"
-              type="text"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Pesquisar por ingrediente, comedouro, marmita..."
-              className="w-full bg-[#FAF7F0] border border-[#E0D8C8] rounded-xl pl-8 pr-14 py-1.5 text-xs text-[#2D2A26] placeholder-[#877E71] focus:outline-none focus:ring-2 focus:ring-[#435B47] focus:bg-white"
-            />
-            <Search className="w-3.5 h-3.5 text-[#877E71] absolute left-2.5 top-1/2 -translate-y-1/2" />
-            {searchQuery && (
-              <button
-                onClick={() => setSearchQuery('')}
-                className="absolute right-2.5 top-1/2 -translate-y-1/2 text-[11px] text-[#877E71] hover:text-[#2D2A26] font-semibold"
-              >
-                Limpar
-              </button>
+          {/* Active search filter status */}
+          <div className="flex-1">
+            {searchQuery ? (
+              <div className="inline-flex items-center gap-2 bg-[#EFEAE1] border border-[#E0D8C8] px-3.5 py-1.5 rounded-full text-xs text-[#2D2A26]">
+                <Search className="w-3.5 h-3.5 text-[#435B47]" />
+                <span>
+                  Filtrando produtos por: <strong className="text-[#435B47]">"{searchQuery}"</strong> ({filteredProducts.length})
+                </span>
+                <button
+                  type="button"
+                  onClick={() => setSearchQuery('')}
+                  className="text-[#877E71] hover:text-[#2D2A26] font-bold text-xs p-0.5 rounded-full hover:bg-[#E0D8C8] transition-colors cursor-pointer"
+                  title="Limpar busca"
+                >
+                  <X className="w-3.5 h-3.5" />
+                </button>
+              </div>
+            ) : (
+              <span className="text-xs text-[#877E71] font-medium hidden sm:inline">
+                Filtrar por valor e relevância:
+              </span>
             )}
           </div>
 

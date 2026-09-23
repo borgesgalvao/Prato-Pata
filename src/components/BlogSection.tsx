@@ -1,18 +1,21 @@
 import React, { useState } from 'react';
 import { BlogPost } from '../types';
-import { Clock, ArrowRight, Sparkles } from 'lucide-react';
+import { Clock, ArrowRight, Sparkles, Search, X } from 'lucide-react';
 
 interface BlogSectionProps {
   articles: BlogPost[];
   onOpenArticle: (article: BlogPost) => void;
+  searchQuery?: string;
+  onClearSearch?: () => void;
 }
 
 export const BlogSection: React.FC<BlogSectionProps> = ({
   articles,
   onOpenArticle,
+  searchQuery = '',
+  onClearSearch,
 }) => {
   const [selectedCategory, setSelectedCategory] = useState<string>('todos');
-  const [searchTerm, setSearchTerm] = useState('');
 
   const categories = [
     { id: 'todos', label: 'Todos os Artigos', icon: '📖' },
@@ -26,12 +29,14 @@ export const BlogSection: React.FC<BlogSectionProps> = ({
     if (selectedCategory !== 'todos' && post.category !== selectedCategory) {
       return false;
     }
-    if (searchTerm.trim() !== '') {
-      const q = searchTerm.toLowerCase();
+    if (searchQuery.trim() !== '') {
+      const q = searchQuery.toLowerCase().trim();
       const matchTitle = post.title.toLowerCase().includes(q);
       const matchExcerpt = post.excerpt.toLowerCase().includes(q);
+      const matchContent = post.content.toLowerCase().includes(q);
       const matchTags = post.tags.some(t => t.toLowerCase().includes(q));
-      if (!matchTitle && !matchExcerpt && !matchTags) return false;
+      const matchAuthor = post.author.name.toLowerCase().includes(q) || post.author.role.toLowerCase().includes(q);
+      if (!matchTitle && !matchExcerpt && !matchContent && !matchTags && !matchAuthor) return false;
     }
     return true;
   });
@@ -55,7 +60,7 @@ export const BlogSection: React.FC<BlogSectionProps> = ({
       </div>
 
       {/* Hero Featured Article */}
-      {featured && selectedCategory === 'todos' && !searchTerm && (
+      {featured && selectedCategory === 'todos' && !searchQuery && (
         <div 
           onClick={() => onOpenArticle(featured)}
           className="group cursor-pointer bg-white rounded-3xl border border-[#EBE4D8] overflow-hidden shadow-xs hover:shadow-md transition-all mb-[36px] flex flex-col lg:flex-row max-w-[1084px] mx-auto"
@@ -101,9 +106,9 @@ export const BlogSection: React.FC<BlogSectionProps> = ({
         </div>
       )}
 
-      {/* Category Pills & Search */}
-      <div className="flex flex-col md:flex-row items-center justify-between gap-4 mb-8">
-        <div className="flex items-center gap-2 overflow-x-auto w-full md:w-auto pb-2 md:pb-0 no-scrollbar">
+      {/* Category Pills & Active Search Indicator */}
+      <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mb-8">
+        <div className="flex items-center gap-2 overflow-x-auto w-full sm:w-auto pb-2 sm:pb-0 no-scrollbar">
           {categories.map((cat) => (
             <button
               key={cat.id}
@@ -121,68 +126,98 @@ export const BlogSection: React.FC<BlogSectionProps> = ({
           ))}
         </div>
 
-        <div className="w-full md:w-64">
-          <input
-            id="blog-search-input"
-            type="text"
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            placeholder="Buscar por tema ou ingrediente..."
-            className="w-full bg-white border border-[#D5CDBD] rounded-xl px-3.5 py-2 text-xs text-[#2D2A26] placeholder-[#877E71] focus:ring-2 focus:ring-[#435B47] focus:outline-none"
-          />
-        </div>
+        {searchQuery.trim() !== '' && (
+          <div className="flex items-center gap-2 bg-[#EFEAE1] px-3.5 py-1.5 rounded-full text-xs text-[#2D2A26] border border-[#E0D8C8] self-start sm:self-auto">
+            <Search className="w-3.5 h-3.5 text-[#435B47]" />
+            <span>
+              Resultados para: <strong className="text-[#435B47]">"{searchQuery}"</strong> ({filteredArticles.length})
+            </span>
+            {onClearSearch && (
+              <button
+                type="button"
+                onClick={onClearSearch}
+                className="text-[#877E71] hover:text-[#2D2A26] text-xs font-bold ml-1 p-0.5 rounded-full hover:bg-[#E0D8C8] transition-colors cursor-pointer"
+                title="Limpar busca"
+              >
+                <X className="w-3.5 h-3.5" />
+              </button>
+            )}
+          </div>
+        )}
       </div>
 
-      {/* Article Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {filteredArticles.map((post) => (
-          <article
-            key={post.id}
-            id={`blog-card-${post.id}`}
-            onClick={() => onOpenArticle(post)}
-            className="group cursor-pointer bg-white rounded-2xl border border-[#EBE4D8] hover:border-[#D5CDBD] overflow-hidden shadow-xs hover:shadow-md transition-all flex flex-col"
-          >
-            <div className="relative aspect-video overflow-hidden bg-[#F5F2EB]">
-              <img
-                src={post.coverImage}
-                alt={post.title}
-                className="w-full h-full object-cover group-hover:scale-104 transition-transform duration-300"
-                loading="lazy"
-              />
-              <span className="absolute top-3 left-3 bg-[#FAF7F0]/90 backdrop-blur-xs text-[#435B47] text-[10px] font-bold px-2.5 py-1 rounded-full border border-[#EBE4D8]">
-                {post.category === 'nutricao-humana' ? 'Nutrição Humana' : post.category === 'bem-estar-animal' ? 'Bem-Estar Animal' : post.category === 'receitas-compartilhadas' ? 'Receitas Duo' : 'Saúde & Cuidados'}
-              </span>
-            </div>
-
-            <div className="p-5 flex flex-col flex-1">
-              <div className="flex items-center gap-2 text-[11px] text-[#8C8375] mb-2">
-                <span>{post.publishedAt}</span>
-                <span>•</span>
-                <span className="flex items-center gap-1">
-                  <Clock className="w-3 h-3" /> {post.readTimeMinutes} min
+      {/* Article Grid or Empty State */}
+      {filteredArticles.length === 0 ? (
+        <div className="bg-white rounded-3xl border border-[#EBE4D8] p-10 text-center max-w-md mx-auto my-8">
+          <div className="w-12 h-12 rounded-full bg-[#FAF7F0] border border-[#EBE4D8] flex items-center justify-center mx-auto mb-3 text-xl">
+            🔍
+          </div>
+          <h3 className="font-serif-brand font-bold text-lg text-[#2D2A26] mb-1">
+            Nenhum artigo encontrado
+          </h3>
+          <p className="text-xs text-[#6B655B] mb-4">
+            Não encontramos matérias para <strong className="text-[#2D2A26]">"{searchQuery}"</strong> nesta categoria.
+          </p>
+          {onClearSearch && (
+            <button
+              onClick={onClearSearch}
+              className="bg-[#435B47] text-white text-xs font-bold px-4 py-2 rounded-xl hover:bg-[#344837] transition-colors cursor-pointer"
+            >
+              Limpar busca e ver todos
+            </button>
+          )}
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {filteredArticles.map((post) => (
+            <article
+              key={post.id}
+              id={`blog-card-${post.id}`}
+              onClick={() => onOpenArticle(post)}
+              className="group cursor-pointer bg-white rounded-2xl border border-[#EBE4D8] hover:border-[#D5CDBD] overflow-hidden shadow-xs hover:shadow-md transition-all flex flex-col"
+            >
+              <div className="relative aspect-video overflow-hidden bg-[#F5F2EB]">
+                <img
+                  src={post.coverImage}
+                  alt={post.title}
+                  className="w-full h-full object-cover group-hover:scale-104 transition-transform duration-300"
+                  loading="lazy"
+                />
+                <span className="absolute top-3 left-3 bg-[#FAF7F0]/90 backdrop-blur-xs text-[#435B47] text-[10px] font-bold px-2.5 py-1 rounded-full border border-[#EBE4D8]">
+                  {post.category === 'nutricao-humana' ? 'Nutrição Humana' : post.category === 'bem-estar-animal' ? 'Bem-Estar Animal' : post.category === 'receitas-compartilhadas' ? 'Receitas Duo' : 'Saúde & Cuidados'}
                 </span>
               </div>
 
-              <h3 className="font-serif-brand font-bold text-base text-[#2D2A26] group-hover:text-[#435B47] transition-colors leading-snug line-clamp-2 mb-2">
-                {post.title}
-              </h3>
-
-              <p className="text-xs text-[#6B655B] line-clamp-2 leading-relaxed mb-4 flex-1">
-                {post.excerpt}
-              </p>
-
-              {/* Tags */}
-              <div className="flex flex-wrap gap-1 mt-auto">
-                {post.tags.slice(0, 3).map((tag, idx) => (
-                  <span key={idx} className="text-[10px] bg-[#FAF7F0] text-[#6B655B] px-2 py-0.5 rounded-md border border-[#EBE4D8]">
-                    #{tag}
+              <div className="p-5 flex flex-col flex-1">
+                <div className="flex items-center gap-2 text-[11px] text-[#8C8375] mb-2">
+                  <span>{post.publishedAt}</span>
+                  <span>•</span>
+                  <span className="flex items-center gap-1">
+                    <Clock className="w-3 h-3" /> {post.readTimeMinutes} min
                   </span>
-                ))}
+                </div>
+
+                <h3 className="font-serif-brand font-bold text-base text-[#2D2A26] group-hover:text-[#435B47] transition-colors leading-snug line-clamp-2 mb-2">
+                  {post.title}
+                </h3>
+
+                <p className="text-xs text-[#6B655B] line-clamp-2 leading-relaxed mb-4 flex-1">
+                  {post.excerpt}
+                </p>
+
+                {/* Tags */}
+                <div className="flex flex-wrap gap-1 mt-auto">
+                  {post.tags.slice(0, 3).map((tag, idx) => (
+                    <span key={idx} className="text-[10px] bg-[#FAF7F0] text-[#6B655B] px-2 py-0.5 rounded-md border border-[#EBE4D8]">
+                      #{tag}
+                    </span>
+                  ))}
+                </div>
               </div>
-            </div>
-          </article>
-        ))}
-      </div>
+            </article>
+          ))}
+        </div>
+      )}
     </section>
   );
 };

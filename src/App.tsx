@@ -457,12 +457,16 @@ export default function App() {
         </div>
       )}
 
-      {/* Header with Navigation */}
+      {/* Header with Navigation and Global Multi-Section Search */}
       <Header
         activeTab={activeTab}
         setActiveTab={setActiveTab}
         searchQuery={searchQuery}
         setSearchQuery={setSearchQuery}
+        products={products}
+        articles={articles}
+        onSelectProduct={(product) => setSelectedProduct(product)}
+        onSelectArticle={(article) => setSelectedArticle(article)}
       />
 
       {/* Main Content Area */}
@@ -482,11 +486,16 @@ export default function App() {
           <BlogSection
             articles={articles}
             onOpenArticle={(article) => setSelectedArticle(article)}
+            searchQuery={searchQuery}
+            onClearSearch={() => setSearchQuery('')}
           />
         )}
 
         {activeTab === 'guide' && (
-          <InteractiveFoodGuide />
+          <InteractiveFoodGuide
+            searchQuery={searchQuery}
+            onClearSearch={() => setSearchQuery('')}
+          />
         )}
       </main>
 
