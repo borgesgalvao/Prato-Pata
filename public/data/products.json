@@ -1,0 +1,205 @@
+[
+  {
+    "id": "ml-prod-petisco-frango-desidratado",
+    "name": "Petisco 100% Peito de Frango Desidratado Natural (100g)",
+    "category": "snacks-naturais",
+    "targetAudience": "pet",
+    "price": 34.90,
+    "originalPrice": 42.00,
+    "rating": 4.9,
+    "reviewsCount": 87,
+    "image": "https://images.unsplash.com/photo-1582798358481-d199fb7347bb?auto=format&fit=crop&w=800&q=80",
+    "shortDescription": "Sem conservantes químicos, corantes ou sódio. Proteína pura desidratada lentamente.",
+    "fullDescription": "Petisco natural super premium feito exclusivamente com peito de frango selecionado, desidratado lentamente em baixa temperatura para preservar todos os nutrientes, aroma e sabor irresistível. Indicado para cães e gatos de todos os portes e idades.",
+    "highlights": [
+      "100% Natural e Monoproteico",
+      "Zero conservantes e sem corantes",
+      "Ideal para adestramento e enriquecimento ambiental",
+      "Compra Garantida no Mercado Livre"
+    ],
+    "specs": {
+      "materialOuComposicao": "100% Peito de Frango Desidratado",
+      "indicacao": "Cães e Gatos de todos os portes",
+      "origem": "Mercado Livre Oficial",
+      "cuidados": "Conservar em local seco e fresco. Consumir em até 15 dias após aberto."
+    },
+    "inStock": true,
+    "featured": true,
+    "affiliateUrl": "https://mercadolivre.com.br/sec/pratoepata-petisco-desidratado",
+    "affiliatePlatform": "mercado_livre"
+  },
+  {
+    "id": "ml-prod-comedouro-ceramica-elevado",
+    "name": "Comedouro Ergonômico de Cerâmica Esmaltada Elevado",
+    "category": "utensilios-ecologicos",
+    "targetAudience": "pet",
+    "price": 89.90,
+    "originalPrice": 115.00,
+    "rating": 5.0,
+    "reviewsCount": 64,
+    "image": "https://images.unsplash.com/photo-1541599540903-216a46ca1dc0?auto=format&fit=crop&w=800&q=80",
+    "shortDescription": "Altura correta que previne refluxo e não solta microplásticos na comida do seu pet.",
+    "fullDescription": "Tigela pesada de cerâmica com suporte elevado estável. A cerâmica é o material mais higiênico para alimentação animal, pois não acumula bactérias nos poros nem causa acne felina ou alergias por microplásticos.",
+    "highlights": [
+      "Cerâmica atóxica de alta queima",
+      "Ergonomia recomendada por veterinários",
+      "Fácil de lavar e resistente ao lava-louças",
+      "Entrega Rápida Full pelo Mercado Livre"
+    ],
+    "specs": {
+      "materialOuComposicao": "Cerâmica vitrificada com suporte em bambu maciço",
+      "indicacao": "Cães de pequeno/médio porte e felinos",
+      "origem": "Mercado Livre Oficial",
+      "cuidados": "Lavar com esponja macia e sabão neutro."
+    },
+    "inStock": true,
+    "featured": true,
+    "affiliateUrl": "https://mercadolivre.com.br/sec/pratoepata-comedouro-ceramica",
+    "affiliatePlatform": "mercado_livre"
+  },
+  {
+    "id": "ml-prod-balanca-digital-precisao",
+    "name": "Balança Digital de Alta Precisão (1g a 10kg) com Função Tara",
+    "category": "cozinha-saudavel",
+    "targetAudience": "tutor",
+    "price": 38.50,
+    "originalPrice": 49.90,
+    "rating": 4.8,
+    "reviewsCount": 142,
+    "image": "https://images.unsplash.com/photo-1594998893017-36147cbcae05?auto=format&fit=crop&w=800&q=80",
+    "shortDescription": "Essencial para dosar as gramas exatas de proteínas, vísceras, legumes e suplementos.",
+    "fullDescription": "Balança de cozinha indispensável tanto para a alimentação natural (AN) do seu pet quanto para o preparo das refeições saudáveis e porções do tutor. Display LCD de fácil leitura e precisão cirúrgica de 1 grama.",
+    "highlights": [
+      "Graduação precisa de 1g até 10kg",
+      "Função Tara para pesar recipientes com facilidade",
+      "Desligamento automático econômico",
+      "Item mais vendido e bem avaliado no Mercado Livre"
+    ],
+    "specs": {
+      "materialOuComposicao": "Plástico ABS reforçado e sensores de alta sensibilidade",
+      "indicacao": "Preparo de porções para tutores e animais",
+      "origem": "Mercado Livre Oficial",
+      "cuidados": "Não submergir em água; limpar com pano úmido."
+    },
+    "inStock": true,
+    "featured": true,
+    "affiliateUrl": "https://mercadolivre.com.br/sec/pratoepata-balanca-precisao",
+    "affiliatePlatform": "mercado_livre"
+  },
+  {
+    "id": "ml-prod-potes-vidro-borossilicato",
+    "name": "Conjunto 4 Potes de Vidro Borossilicato com Tampa Hermética (Batch Cooking)",
+    "category": "cozinha-saudavel",
+    "targetAudience": "tutor",
+    "price": 119.90,
+    "originalPrice": 149.00,
+    "rating": 5.0,
+    "reviewsCount": 98,
+    "image": "https://images.unsplash.com/photo-1584269600464-37b1b58a9fe7?auto=format&fit=crop&w=800&q=80",
+    "shortDescription": "Seguro para freezer, micro-ondas e forno. Vidro livre de BPA e chumbo para congelar marmitas.",
+    "fullDescription": "Perfeito para a rotina de congelamento semanal de marmitas humanas e porções de AN (Alimentação Natural) pet. O vidro borossilicato aguenta choques térmicos sem trincar e não retém cheiro nem manchas de alimentos como abóbora ou beterraba.",
+    "highlights": [
+      "Resiste de -20°C no congelador até 400°C no forno",
+      "Vedação com anel de silicone antibacteriano",
+      "100% Livre de BPA, Ftalatos e Microplásticos",
+      "Garantia de Entrega Mercado Livre"
+    ],
+    "specs": {
+      "materialOuComposicao": "Vidro Borossilicato de alta densidade e silicone grau alimentício",
+      "indicacao": "Conservação de marmitas do tutor e refeições do pet",
+      "origem": "Mercado Livre Oficial",
+      "cuidados": "Remover tampa plástica antes de levar ao forno convencional."
+    },
+    "inStock": true,
+    "featured": true,
+    "affiliateUrl": "https://mercadolivre.com.br/sec/pratoepata-marmita-borossilicato",
+    "affiliatePlatform": "mercado_livre"
+  },
+  {
+    "id": "ml-prod-tapete-lamber-silicone",
+    "name": "Tapete de Lamber Antiestresse em Silicone Alimentício com Ventosas",
+    "category": "pet-caes",
+    "targetAudience": "pet",
+    "price": 42.90,
+    "originalPrice": 55.00,
+    "rating": 4.9,
+    "reviewsCount": 112,
+    "image": "https://images.unsplash.com/photo-1548767797-d8c844163c4c?auto=format&fit=crop&w=800&q=80",
+    "shortDescription": "Estimula a liberação de endorfina através do ato natural de lamber purês, iogurte ou pastas.",
+    "fullDescription": "Excelente para enriquecimento alimentar cognitivo. Espalhe purê de abóbora, maçã raspada, iogurte natural ou sachê e congele por algumas horas. O pet se diverte e desacelera o ritmo da refeição.",
+    "highlights": [
+      "Silicone 100% alimentar flexível e atóxico",
+      "Ventosas de alta aderência para chão e azulejos",
+      "Reduz ansiedade durante banhos e tempestades",
+      "Compra Segura com envio Mercado Livre"
+    ],
+    "specs": {
+      "materialOuComposicao": "Silicone BPA Free alimentício",
+      "indicacao": "Cães e Gatos de qualquer porte",
+      "origem": "Mercado Livre Oficial",
+      "cuidados": "Pode ser esterilizado em água fervente ou lava-louças."
+    },
+    "inStock": true,
+    "featured": false,
+    "affiliateUrl": "https://mercadolivre.com.br/sec/pratoepata-tapete-lamber-silicone",
+    "affiliatePlatform": "mercado_livre"
+  },
+  {
+    "id": "ml-prod-fonte-agua-inox-bivolt",
+    "name": "Fonte de Água Elétrica em Aço Inox (2L) com Filtro de Carvão Ativado",
+    "category": "pet-gatos",
+    "targetAudience": "pet",
+    "price": 149.90,
+    "originalPrice": 189.00,
+    "rating": 4.9,
+    "reviewsCount": 78,
+    "image": "https://images.unsplash.com/photo-1514888286974-6c03e2ca1dba?auto=format&fit=crop&w=800&q=80",
+    "shortDescription": "Água corrente, fresca e oxigenada 24h para prevenir problemas renais graves em felinos.",
+    "fullDescription": "Gatos preferem instintivamente água em movimento. O corpo em aço inoxidável cirúrgico impede a proliferação de bactérias comumente presentes em fontes plásticas, além de manter a água fresca por muito mais tempo.",
+    "highlights": [
+      "Bomba ultra-silenciosa de baixo consumo",
+      "Corpo integral em Aço Inox 304 higiênico",
+      "Filtragem tripla contra pelos, odores e impurezas",
+      "Envio Full Seguro pelo Mercado Livre"
+    ],
+    "specs": {
+      "materialOuComposicao": "Aço Inoxidável 304 e carvão vegetal ativado",
+      "indicacao": "Felinos e cães de pequeno porte",
+      "origem": "Mercado Livre Oficial",
+      "cuidados": "Trocar o filtro a cada 30 dias e higienizar a bomba semanalmente."
+    },
+    "inStock": true,
+    "featured": true,
+    "affiliateUrl": "https://mercadolivre.com.br/sec/pratoepata-fonte-agua-inox",
+    "affiliatePlatform": "mercado_livre"
+  },
+  {
+    "id": "ml-prod-kit-duo-cortador-dosador",
+    "name": "Kit Duo Saudável: Cortador Espiralizador de Legumes + Colheres Medidoras Inox",
+    "category": "kits-duo",
+    "targetAudience": "duo",
+    "price": 79.90,
+    "originalPrice": 99.00,
+    "rating": 4.8,
+    "reviewsCount": 45,
+    "image": "https://images.unsplash.com/photo-1556911220-e15b29be8c8f?auto=format&fit=crop&w=800&q=80",
+    "shortDescription": "Agilize o corte de cenouras, abobrinhas e porções de complementos para sua refeição e a do seu pet.",
+    "fullDescription": "Kit curado especialmente pela equipe do Prato & Pata para quem prepara a comida da família e dos animais na mesma tábua. Facilita o corte padronizado dos vegetais para cozinhar no vapor e a medição das doses de azeite, ervas ou pós nutricionais.",
+    "highlights": [
+      "Lâminas em inox ultra-afiadas e resistentes",
+      "Economiza até 60% do tempo de pré-preparo",
+      "Prático para picar legumes em cubos ou fios",
+      "Curadoria Exclusiva Prato & Pata no Mercado Livre"
+    ],
+    "specs": {
+      "materialOuComposicao": "Aço Inox escovado e ABS de alta resistência",
+      "indicacao": "Tutores praticantes de alimentação saudável e natural",
+      "origem": "Mercado Livre Oficial",
+      "cuidados": "Cuidado ao manusear as lâminas afiadas."
+    },
+    "inStock": true,
+    "featured": false,
+    "affiliateUrl": "https://mercadolivre.com.br/sec/pratoepata-kit-duo-cortador",
+    "affiliatePlatform": "mercado_livre"
+  }
+]

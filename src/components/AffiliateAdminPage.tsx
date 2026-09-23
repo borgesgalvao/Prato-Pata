@@ -3,7 +3,8 @@ import { Product } from '../types';
 import { 
   Link2, Check, ExternalLink, Sparkles, Shield, 
   ArrowLeft, Search, Save, Plus, AlertCircle, Trash2, Eye, EyeOff, BarChart2,
-  Loader2, RefreshCw, Zap, Image as ImageIcon, Upload, FolderOpen
+  Loader2, RefreshCw, Zap, Image as ImageIcon, Upload, FolderOpen, Download,
+  FileJson, CheckCircle2
 } from 'lucide-react';
 import { ImageBankModal } from './ImageBankModal';
 
@@ -13,6 +14,7 @@ interface AffiliateAdminPageProps {
   onAddNewAffiliateProduct: (newProduct: Partial<Product>) => void;
   onUpdateProductDetails?: (productId: string, updates: Partial<Product>) => void;
   onDeleteProduct?: (productId: string) => void;
+  onSyncAllProducts?: (products: Product[]) => void;
   onCloseAdmin: () => void;
   affiliateClicks: Record<string, number>;
 }
@@ -23,6 +25,7 @@ export const AffiliateAdminPage: React.FC<AffiliateAdminPageProps> = ({
   onAddNewAffiliateProduct,
   onUpdateProductDetails,
   onDeleteProduct,
+  onSyncAllProducts,
   onCloseAdmin,
   affiliateClicks,
 }) => {
@@ -75,6 +78,83 @@ export const AffiliateAdminPage: React.FC<AffiliateAdminPageProps> = ({
   } | null>(null);
 
   const [isSyncingExistingId, setIsSyncingExistingId] = useState<string | null>(null);
+
+  // Catalog Backup & Persistent File Handlers
+  const importJsonRef = useRef<HTMLInputElement>(null);
+  const [isExporting, setIsExporting] = useState(false);
+  const [isSyncingServer, setIsSyncingServer] = useState(false);
+  const [syncFeedback, setSyncFeedback] = useState<string | null>(null);
+
+  const handleExportCatalog = () => {
+    setIsExporting(true);
+    try {
+      const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(products, null, 2));
+      const downloadAnchor = document.createElement('a');
+      downloadAnchor.setAttribute("href", dataStr);
+      downloadAnchor.setAttribute("download", "products.json");
+      document.body.appendChild(downloadAnchor);
+      downloadAnchor.click();
+      downloadAnchor.remove();
+      setSyncFeedback('Arquivo products.json baixado com sucesso!');
+      setTimeout(() => setSyncFeedback(null), 4000);
+    } catch (e) {
+      console.warn('Export error:', e);
+    } finally {
+      setIsExporting(false);
+    }
+  };
+
+  const handleImportJsonFile = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = async (event) => {
+      try {
+        const text = event.target?.result as string;
+        const parsed = JSON.parse(text);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          if (onSyncAllProducts) {
+            onSyncAllProducts(parsed);
+          }
+          setSyncFeedback(`Catálogo importado com sucesso! ${parsed.length} produtos carregados.`);
+          setTimeout(() => setSyncFeedback(null), 5000);
+        } else {
+          setSyncFeedback('O arquivo JSON selecionado não contém uma lista válida de produtos.');
+          setTimeout(() => setSyncFeedback(null), 4000);
+        }
+      } catch (err) {
+        setSyncFeedback('Erro ao ler ou processar o arquivo JSON.');
+        setTimeout(() => setSyncFeedback(null), 4000);
+      }
+    };
+    reader.readAsText(file);
+    if (e.target) e.target.value = '';
+  };
+
+  const handleSaveAllToServer = async () => {
+    setIsSyncingServer(true);
+    try {
+      if (onSyncAllProducts) {
+        onSyncAllProducts(products);
+      }
+      const res = await fetch('/api/products/sync-all', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ products }),
+      });
+      if (res.ok) {
+        setSyncFeedback('Catálogo sincronizado e gravado no arquivo public/data/products.json!');
+      } else {
+        setSyncFeedback('Catálogo atualizado com sucesso no navegador!');
+      }
+    } catch (e) {
+      setSyncFeedback('Catálogo atualizado no navegador!');
+    } finally {
+      setIsSyncingServer(false);
+      setTimeout(() => setSyncFeedback(null), 4000);
+    }
+  };
 
   // Upload image file directly from user's computer
   const handleUploadFromComputer = async (file: File, targetProductId?: string) => {
@@ -378,6 +458,85 @@ export const AffiliateAdminPage: React.FC<AffiliateAdminPageProps> = ({
               <span>{isAddingNew ? 'Cancelar Cadastro' : 'Cadastrar Novo Item ML'}</span>
             </button>
           </div>
+        </div>
+
+        {/* Catalog Persistence & Hosting Sync Card */}
+        <div className="bg-[#FAF7F0] border-2 border-[#DCD3C1] rounded-3xl p-5 sm:p-6 mb-8 shadow-xs">
+          <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+            <div className="flex items-start gap-3.5">
+              <div className="w-10 h-10 rounded-2xl bg-[#435B47] text-white flex items-center justify-center shrink-0 shadow-xs mt-0.5">
+                <FileJson className="w-5 h-5 text-[#FFE600]" />
+              </div>
+              <div>
+                <div className="flex items-center gap-2 flex-wrap">
+                  <h2 className="font-bold text-[#2D2A26] text-sm sm:text-base">
+                    Sincronização & Persistência na Hospedagem
+                  </h2>
+                  <span className="bg-[#E3EFE6] text-[#24572D] text-[11px] font-bold px-2.5 py-0.5 rounded-full border border-[#C2E0C8] flex items-center gap-1">
+                    <CheckCircle2 className="w-3.5 h-3.5 text-[#24572D]" />
+                    Arquivo Permanente Ativo (products.json)
+                  </span>
+                </div>
+                <p className="text-xs text-[#6B655B] mt-1 leading-relaxed max-w-2xl">
+                  Seus produtos cadastrados são salvos no arquivo estático <code className="bg-white px-1.5 py-0.5 rounded border border-[#D5CDBD] text-[#435B47] font-semibold text-[11px]">public/data/products.json</code>. 
+                  Ao enviar o site para sua hospedagem (Hostinger), todos os visitantes verão a lojinha com os produtos imediatamente.
+                </p>
+              </div>
+            </div>
+
+            <div className="flex flex-wrap items-center gap-2.5 shrink-0">
+              <input 
+                type="file" 
+                ref={importJsonRef} 
+                onChange={handleImportJsonFile} 
+                accept=".json,application/json" 
+                className="hidden" 
+              />
+
+              <button
+                type="button"
+                onClick={handleExportCatalog}
+                disabled={isExporting}
+                className="bg-white hover:bg-[#F2ECE1] text-[#2D2A26] border border-[#C2B7A3] px-3.5 py-2 rounded-xl text-xs font-bold flex items-center gap-1.5 shadow-xs transition-colors cursor-pointer"
+                title="Baixar arquivo products.json para seu computador"
+              >
+                <Download className="w-3.5 h-3.5 text-[#435B47]" />
+                <span>Baixar products.json</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => importJsonRef.current?.click()}
+                className="bg-white hover:bg-[#F2ECE1] text-[#2D2A26] border border-[#C2B7A3] px-3.5 py-2 rounded-xl text-xs font-bold flex items-center gap-1.5 shadow-xs transition-colors cursor-pointer"
+                title="Importar lista de produtos a partir de arquivo JSON"
+              >
+                <Upload className="w-3.5 h-3.5 text-[#435B47]" />
+                <span>Importar JSON</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={handleSaveAllToServer}
+                disabled={isSyncingServer}
+                className="bg-[#435B47] hover:bg-[#344738] text-white px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-1.5 shadow-xs transition-transform active:scale-95 cursor-pointer disabled:opacity-50"
+                title="Gravar todos os produtos imediatamente no arquivo products.json"
+              >
+                {isSyncingServer ? (
+                  <Loader2 className="w-3.5 h-3.5 animate-spin text-[#FFE600]" />
+                ) : (
+                  <Save className="w-3.5 h-3.5 text-[#FFE600]" />
+                )}
+                <span>Salvar Catálogo no Arquivo</span>
+              </button>
+            </div>
+          </div>
+
+          {syncFeedback && (
+            <div className="mt-3.5 bg-white border border-[#C2E0C8] rounded-xl px-4 py-2 text-xs text-[#24572D] font-bold flex items-center gap-2 animate-fadeIn">
+              <Check className="w-4 h-4 text-[#24572D]" />
+              <span>{syncFeedback}</span>
+            </div>
+          )}
         </div>
 
         {/* Quick Stats Grid */}

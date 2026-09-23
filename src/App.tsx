@@ -37,22 +37,26 @@ export default function App() {
       'prod-1', 'prod-2', 'prod-3', 'prod-4', 'prod-5', 
       'prod-6', 'prod-7', 'prod-8', 'prod-9', 'prod-10', 'prod-11', 'prod-12'
     ]);
-    const saved = localStorage.getItem('pratoepata_custom_products');
-    if (saved) {
-      try {
-        const parsed = JSON.parse(saved);
-        if (Array.isArray(parsed)) {
-          // Strictly eliminate the requested items and ensure only active Mercado Livre links remain
-          const activeOnly = parsed.filter(
-            (p: Product) => !ELIMINATED_IDS.has(p.id) && Boolean(p.affiliateUrl && p.affiliateUrl.trim().length > 0)
-          );
-          return activeOnly;
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('pratoepata_custom_products');
+      if (saved) {
+        try {
+          const parsed = JSON.parse(saved);
+          if (Array.isArray(parsed) && parsed.length > 0) {
+            // Filter out old legacy dummy items and ensure active Mercado Livre url
+            const activeOnly = parsed.filter(
+              (p: Product) => !ELIMINATED_IDS.has(p.id) && Boolean(p.affiliateUrl && p.affiliateUrl.trim().length > 0)
+            );
+            if (activeOnly.length > 0) {
+              return activeOnly;
+            }
+          }
+        } catch (e) {
+          // fallback to INITIAL_PRODUCTS
         }
-      } catch (e) {
-        return [];
       }
     }
-    return [];
+    return INITIAL_PRODUCTS;
   });
   const [articles, setArticles] = useState<BlogPost[]>(() => {
     const saved = localStorage.getItem('pratoepata_articles');
@@ -72,10 +76,61 @@ export default function App() {
     localStorage.setItem('pratoepata_articles', JSON.stringify(articles));
   }, [articles]);
 
-  // Persist customized products with affiliate links
+  // Persist customized products with affiliate links to localStorage
   useEffect(() => {
     localStorage.setItem('pratoepata_custom_products', JSON.stringify(products));
   }, [products]);
+
+  // Fetch persistent catalog from server or static /data/products.json on mount
+  useEffect(() => {
+    let isMounted = true;
+    const fetchCatalog = async () => {
+      try {
+        let remoteProducts: Product[] | null = null;
+        // 1. Try Node API first
+        try {
+          const res = await fetch('/api/products');
+          if (res.ok) {
+            const json = await res.json();
+            if (json.success && Array.isArray(json.products) && json.products.length > 0) {
+              remoteProducts = json.products;
+            }
+          }
+        } catch (apiErr) {}
+
+        // 2. If API was unreachable (e.g. static hosting on Hostinger Apache), fetch static /data/products.json
+        if (!remoteProducts) {
+          try {
+            const staticRes = await fetch('/data/products.json');
+            if (staticRes.ok) {
+              const staticJson = await staticRes.json();
+              if (Array.isArray(staticJson) && staticJson.length > 0) {
+                remoteProducts = staticJson;
+              }
+            }
+          } catch (staticErr) {}
+        }
+
+        if (remoteProducts && remoteProducts.length > 0 && isMounted) {
+          const validRemote = remoteProducts.filter((p) => Boolean(p.affiliateUrl && p.affiliateUrl.trim().length > 0));
+          if (validRemote.length > 0) {
+            setProducts((current) => {
+              const remoteIds = new Set(validRemote.map((p) => p.id));
+              const localCustomOnly = current.filter((p) => !remoteIds.has(p.id) && p.id.startsWith('ml-prod-'));
+              return [...localCustomOnly, ...validRemote];
+            });
+          }
+        }
+      } catch (err) {
+        console.warn('Catalog auto-fetch deferred:', err);
+      }
+    };
+
+    fetchCatalog();
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
   // Persist affiliate clicks
   useEffect(() => {
@@ -116,14 +171,16 @@ export default function App() {
 
   // Affiliate Management Handlers
   const handleUpdateProductAffiliate = async (productId: string, affiliateUrl: string, isActive: boolean) => {
+    let updatedProduct: Product | null = null;
     setProducts((prev) =>
       prev.map((p) => {
         if (p.id === productId) {
-          return {
+          updatedProduct = {
             ...p,
             affiliateUrl: affiliateUrl || undefined,
             affiliatePlatform: 'mercado_livre' as const,
           };
+          return updatedProduct;
         }
         return p;
       })
@@ -131,6 +188,13 @@ export default function App() {
 
     // Sync with backend API
     try {
+      if (updatedProduct) {
+        await fetch('/api/products', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(updatedProduct),
+        });
+      }
       await fetch('/api/affiliates', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -171,6 +235,14 @@ export default function App() {
     setProducts((prev) => [newFullProduct, ...prev]);
 
     try {
+      // 1. Write product to server persistent catalog file (products.json)
+      await fetch('/api/products', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(newFullProduct),
+      });
+
+      // 2. Register affiliate link tracking
       await fetch('/api/affiliates', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -184,19 +256,60 @@ export default function App() {
       console.warn('Backend affiliate sync deferred:', e);
     }
 
-    showToast('Novo item do Mercado Livre cadastrado com sucesso!');
+    showToast('Novo item cadastrado e salvo no catálogo do site!');
   };
 
-  const handleUpdateProductDetails = (productId: string, updates: Partial<Product>) => {
+  const handleUpdateProductDetails = async (productId: string, updates: Partial<Product>) => {
+    let updatedProduct: Product | null = null;
     setProducts((prev) =>
-      prev.map((p) => (p.id === productId ? { ...p, ...updates } : p))
+      prev.map((p) => {
+        if (p.id === productId) {
+          updatedProduct = { ...p, ...updates };
+          return updatedProduct;
+        }
+        return p;
+      })
     );
-    showToast('Dados do produto atualizados pelo Mercado Livre!');
+
+    if (updatedProduct) {
+      try {
+        await fetch('/api/products', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(updatedProduct),
+        });
+      } catch (e) {}
+    }
+
+    showToast('Dados do produto atualizados e salvos no catálogo!');
   };
 
-  const handleDeleteProduct = (productId: string) => {
+  const handleDeleteProduct = async (productId: string) => {
     setProducts((prev) => prev.filter((p) => p.id !== productId));
+    try {
+      await fetch(`/api/products/${productId}`, {
+        method: 'DELETE',
+      });
+    } catch (e) {}
     showToast('Produto excluído com sucesso!');
+  };
+
+  const handleSyncAllProducts = async (newProductsList: Product[]) => {
+    setProducts(newProductsList);
+    try {
+      const res = await fetch('/api/products/sync-all', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ products: newProductsList }),
+      });
+      if (res.ok) {
+        showToast('Catálogo salvo no arquivo permanente products.json!');
+      } else {
+        showToast('Catálogo atualizado no navegador!');
+      }
+    } catch (e) {
+      showToast('Catálogo atualizado no navegador!');
+    }
   };
 
   const handleTrackAffiliateClick = async (productId: string) => {
@@ -265,6 +378,7 @@ export default function App() {
         onAddNewAffiliateProduct={handleAddNewAffiliateProduct}
         onUpdateProductDetails={handleUpdateProductDetails}
         onDeleteProduct={handleDeleteProduct}
+        onSyncAllProducts={handleSyncAllProducts}
         onCloseAdmin={() => setIsAdminMode(false)}
         affiliateClicks={affiliateClicks}
       />

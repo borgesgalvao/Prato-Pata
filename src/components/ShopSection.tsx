@@ -23,7 +23,7 @@ export const ShopSection: React.FC<ShopSectionProps> = ({
   const [selectedCategory, setSelectedCategory] = useState<ProductCategory>('todos');
   const [selectedAudience, setSelectedAudience] = useState<TargetAudience | 'todos'>('todos');
   const [sortBy, setSortBy] = useState<'relevance' | 'price-asc' | 'price-desc' | 'rating'>('relevance');
-  const [maxPrice, setMaxPrice] = useState<number>(250);
+  const [maxPrice, setMaxPrice] = useState<number>(500);
   const [headerHeight, setHeaderHeight] = useState<number>(120);
 
   useEffect(() => {
@@ -89,7 +89,7 @@ export const ShopSection: React.FC<ShopSectionProps> = ({
   const resetFilters = () => {
     setSelectedCategory('todos');
     setSelectedAudience('todos');
-    setMaxPrice(250);
+    setMaxPrice(500);
     setSearchQuery('');
     setSortBy('relevance');
   };
@@ -214,7 +214,7 @@ export const ShopSection: React.FC<ShopSectionProps> = ({
                 id="shop-price-slider"
                 type="range"
                 min="30"
-                max="250"
+                max="500"
                 step="10"
                 value={maxPrice}
                 onChange={(e) => setMaxPrice(Number(e.target.value))}
@@ -248,7 +248,7 @@ export const ShopSection: React.FC<ShopSectionProps> = ({
         <span>
           Mostrando <strong>{filteredProducts.length}</strong> produtos selecionados
         </span>
-        {(selectedCategory !== 'todos' || selectedAudience !== 'todos' || searchQuery || maxPrice < 250) && (
+        {(selectedCategory !== 'todos' || selectedAudience !== 'todos' || searchQuery || maxPrice < 500) && (
           <button
             id="shop-reset-filters-btn"
             onClick={resetFilters}

@@ -27,6 +27,105 @@ if (!fs.existsSync(uploadsDirPath)) {
 }
 app.use('/uploads', express.static(uploadsDirPath));
 
+// Static serving for persistent catalog data (/data directory)
+const dataDirPath = path.join(process.cwd(), 'public', 'data');
+if (!fs.existsSync(dataDirPath)) {
+  fs.mkdirSync(dataDirPath, { recursive: true });
+}
+app.use('/data', express.static(dataDirPath));
+
+// ==========================================
+// Persistent Products Catalog File Handlers
+// ==========================================
+function readProductsCatalog(): any[] {
+  const publicJsonPath = path.join(process.cwd(), 'public', 'data', 'products.json');
+  if (fs.existsSync(publicJsonPath)) {
+    try {
+      const content = fs.readFileSync(publicJsonPath, 'utf-8');
+      const parsed = JSON.parse(content);
+      if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+    } catch (e) {
+      console.warn('Error reading products.json:', e);
+    }
+  }
+  return [];
+}
+
+function saveProductsCatalog(products: any[]) {
+  const publicDir = path.join(process.cwd(), 'public', 'data');
+  if (!fs.existsSync(publicDir)) {
+    fs.mkdirSync(publicDir, { recursive: true });
+  }
+  const publicJsonPath = path.join(publicDir, 'products.json');
+  fs.writeFileSync(publicJsonPath, JSON.stringify(products, null, 2), 'utf-8');
+
+  // Also update dist/data/products.json if dist folder exists
+  const distDir = path.join(process.cwd(), 'dist', 'data');
+  if (fs.existsSync(path.join(process.cwd(), 'dist'))) {
+    if (!fs.existsSync(distDir)) {
+      fs.mkdirSync(distDir, { recursive: true });
+    }
+    try {
+      fs.writeFileSync(path.join(distDir, 'products.json'), JSON.stringify(products, null, 2), 'utf-8');
+    } catch (e) {}
+  }
+
+  // Also update src/data/products.ts so future Vite builds automatically embed latest products
+  try {
+    const tsCode = `import { Product } from '../types';\n\nexport const INITIAL_PRODUCTS: Product[] = ${JSON.stringify(products, null, 2)};\n`;
+    fs.writeFileSync(path.join(process.cwd(), 'src', 'data', 'products.ts'), tsCode, 'utf-8');
+  } catch (e) {
+    console.warn('Error syncing src/data/products.ts:', e);
+  }
+}
+
+// GET /api/products: Returns products list from persistent storage
+app.get('/api/products', (req, res) => {
+  const products = readProductsCatalog();
+  res.json({ success: true, products });
+});
+
+// POST /api/products: Add or update a product in persistent storage
+app.post('/api/products', (req, res) => {
+  const newProduct = req.body;
+  if (!newProduct || !newProduct.id) {
+    res.status(400).json({ success: false, error: 'Dados inválidos do produto.' });
+    return;
+  }
+
+  const list = readProductsCatalog();
+  const existingIdx = list.findIndex((p: any) => p.id === newProduct.id);
+  if (existingIdx >= 0) {
+    list[existingIdx] = { ...list[existingIdx], ...newProduct };
+  } else {
+    list.unshift(newProduct);
+  }
+
+  saveProductsCatalog(list);
+  res.json({ success: true, product: newProduct, count: list.length });
+});
+
+// POST /api/products/sync-all: Overwrite the entire catalog with new array
+app.post('/api/products/sync-all', (req, res) => {
+  const { products } = req.body;
+  if (!Array.isArray(products)) {
+    res.status(400).json({ success: false, error: 'Array de produtos esperado.' });
+    return;
+  }
+
+  saveProductsCatalog(products);
+  res.json({ success: true, count: products.length });
+});
+
+// DELETE /api/products/:id: Delete a product from persistent storage
+app.delete('/api/products/:id', (req, res) => {
+  const { id } = req.params;
+  const list = readProductsCatalog();
+  const updatedList = list.filter((p: any) => p.id !== id);
+  saveProductsCatalog(updatedList);
+  res.json({ success: true, count: updatedList.length });
+});
+
 // API health endpoint
 app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', app: 'Prato e Pata' });
