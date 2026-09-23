@@ -59,6 +59,7 @@ export const AffiliateAdminPage: React.FC<AffiliateAdminPageProps> = ({
   const [newProdName, setNewProdName] = useState('');
   const [newProdUrl, setNewProdUrl] = useState('');
   const [newProdPrice, setNewProdPrice] = useState('');
+  const [newProdOriginalPrice, setNewProdOriginalPrice] = useState('');
   const [newProdAudience, setNewProdAudience] = useState<'pet' | 'tutor' | 'duo'>('pet');
   const [newProdCategory, setNewProdCategory] = useState<any>('snacks-naturais');
   const [newProdImage, setNewProdImage] = useState('');
@@ -70,7 +71,8 @@ export const AffiliateAdminPage: React.FC<AffiliateAdminPageProps> = ({
   const [fetchMlSuccess, setFetchMlSuccess] = useState<string | null>(null);
   const [lastFetchedData, setLastFetchedData] = useState<{
     title?: string;
-    priceFormatted?: string;
+    priceFormatted?: string | null;
+    originalPriceFormatted?: string | null;
     image?: string;
     description?: string;
     source?: string;
@@ -260,13 +262,20 @@ export const AffiliateAdminPage: React.FC<AffiliateAdminPageProps> = ({
         const item = json.data;
         if (item.title) setNewProdName(item.title);
         if (item.priceFormatted) setNewProdPrice(item.priceFormatted);
+        if (item.originalPriceFormatted) setNewProdOriginalPrice(item.originalPriceFormatted);
         if (item.image) setNewProdImage(item.image);
-        if (item.description) setNewProdDescription(item.description);
+        if (item.description && !item.description.includes('Visite a página') && !item.description.includes('PRATOEPATA')) {
+          setNewProdDescription(item.description);
+        }
         if (item.targetAudience) setNewProdAudience(item.targetAudience);
         if (item.category) setNewProdCategory(item.category);
 
         setLastFetchedData(item);
-        setFetchMlSuccess('Foto, título, preço e descrição buscados e preenchidos automaticamente do Mercado Livre!');
+        if (item.priceFormatted) {
+          setFetchMlSuccess(`Dados obtidos do Mercado Livre! Preço real identificado: R$ ${item.priceFormatted}`);
+        } else {
+          setFetchMlSuccess('Foto, título e detalhes obtidos do Mercado Livre! Insira o preço de referência desejado.');
+        }
       } else {
         setFetchMlError(json.error || 'Não foi possível extrair dados desse link automaticamente. Você pode preencher os campos manualmente.');
       }
@@ -285,36 +294,39 @@ export const AffiliateAdminPage: React.FC<AffiliateAdminPageProps> = ({
   };
 
   const handleSyncExistingProduct = async (product: Product) => {
-    const url = editUrls[product.id] || '';
-    if (!url.trim()) return;
+    const url = (editUrls[product.id] || product.affiliateUrl || '').trim();
+    if (!url) return;
 
     setIsSyncingExistingId(product.id);
     try {
       const response = await fetch('/api/scrape-mercadolivre', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ url: url.trim() }),
+        body: JSON.stringify({ url }),
       });
       const json = await response.json();
       if (json.success && json.data) {
         const item = json.data;
         const updates: Partial<Product> = {
-          affiliateUrl: url.trim(),
+          affiliateUrl: url,
         };
         if (item.title) updates.name = item.title;
         if (item.priceFormatted) {
           const numPrice = parseFloat(item.priceFormatted.replace(',', '.'));
           if (!isNaN(numPrice) && numPrice > 0) updates.price = numPrice;
         }
+        if (typeof item.originalPrice === 'number' && item.originalPrice > 0) {
+          updates.originalPrice = item.originalPrice;
+        }
         if (item.image) updates.image = item.image;
-        if (item.description) {
+        if (item.description && !item.description.includes('Visite a página') && !item.description.includes('PRATOEPATA')) {
           updates.shortDescription = item.description;
           updates.fullDescription = item.description;
         }
         if (onUpdateProductDetails) {
           onUpdateProductDetails(product.id, updates);
         }
-        onUpdateProductAffiliate(product.id, url.trim(), true);
+        onUpdateProductAffiliate(product.id, url, true);
         setSavedStatus((prev) => ({ ...prev, [product.id]: true }));
         setTimeout(() => {
           setSavedStatus((prev) => ({ ...prev, [product.id]: false }));
@@ -350,7 +362,8 @@ export const AffiliateAdminPage: React.FC<AffiliateAdminPageProps> = ({
     e.preventDefault();
     if (!newProdName.trim() || !newProdUrl.trim()) return;
 
-    const parsedPrice = parseFloat(newProdPrice.replace(',', '.')) || 49.90;
+    const parsedPrice = parseFloat(newProdPrice.replace(',', '.')) || 0;
+    const parsedOriginalPrice = newProdOriginalPrice ? parseFloat(newProdOriginalPrice.replace(',', '.')) : undefined;
     const defaultImage = newProdImage.trim() || (
       newProdAudience === 'tutor' 
         ? 'https://images.unsplash.com/photo-1556911220-e15b29be8c8f?auto=format&fit=crop&w=800&q=80'
@@ -363,6 +376,7 @@ export const AffiliateAdminPage: React.FC<AffiliateAdminPageProps> = ({
       category: newProdCategory,
       targetAudience: newProdAudience,
       price: parsedPrice,
+      originalPrice: parsedOriginalPrice && parsedOriginalPrice > parsedPrice ? parsedOriginalPrice : undefined,
       rating: 5.0,
       reviewsCount: 1,
       image: defaultImage,
@@ -383,6 +397,7 @@ export const AffiliateAdminPage: React.FC<AffiliateAdminPageProps> = ({
     setNewProdName('');
     setNewProdUrl('');
     setNewProdPrice('');
+    setNewProdOriginalPrice('');
     setNewProdDescription('');
     setNewProdImage('');
     setLastFetchedData(null);
@@ -872,8 +887,8 @@ export const AffiliateAdminPage: React.FC<AffiliateAdminPageProps> = ({
                 </span>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                <div className="sm:col-span-2">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                <div className="sm:col-span-2 lg:col-span-2">
                   <label className="block text-xs font-bold text-[#4E4940] mb-1">
                     Nome do Produto *
                   </label>
@@ -889,14 +904,27 @@ export const AffiliateAdminPage: React.FC<AffiliateAdminPageProps> = ({
 
                 <div>
                   <label className="block text-xs font-bold text-[#4E4940] mb-1">
-                    Preço de Referência (R$) *
+                    Preço Real / Atual (R$) *
                   </label>
                   <input
                     type="text"
                     required
                     value={newProdPrice}
                     onChange={(e) => setNewProdPrice(e.target.value)}
-                    placeholder="69,90"
+                    placeholder="Ex: 35,90"
+                    className="w-full bg-[#FAF7F0] border border-[#D5CDBD] rounded-xl px-3.5 py-2 text-xs text-[#2D2A26] focus:ring-2 focus:ring-[#435B47] focus:bg-white"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-[#4E4940] mb-1">
+                    Preço De / Riscado (R$) <span className="text-[10px] text-[#8C8375] font-normal">(opcional)</span>
+                  </label>
+                  <input
+                    type="text"
+                    value={newProdOriginalPrice}
+                    onChange={(e) => setNewProdOriginalPrice(e.target.value)}
+                    placeholder="Ex: 49,90"
                     className="w-full bg-[#FAF7F0] border border-[#D5CDBD] rounded-xl px-3.5 py-2 text-xs text-[#2D2A26] focus:ring-2 focus:ring-[#435B47] focus:bg-white"
                   />
                 </div>

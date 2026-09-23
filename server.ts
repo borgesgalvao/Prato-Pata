@@ -309,6 +309,7 @@ app.post('/api/scrape-mercadolivre', async (req, res) => {
 
     let title = '';
     let price: number | null = null;
+    let originalPrice: number | null = null;
     let image = '';
     let description = '';
     let source: 'ml_api' | 'ml_html' | 'ml_fallback' = 'ml_fallback';
@@ -390,10 +391,27 @@ app.post('/api/scrape-mercadolivre', async (req, res) => {
         }
       }
 
-      // Price extraction
+      // Price extraction: Strategy 1 - Check embedded JSON component states (e.g. Creator / Social pages)
+      const currentPriceMatch = html.match(/"current_price"\s*:\s*\{\s*"value"\s*:\s*([0-9.]+)/i);
+      if (currentPriceMatch && currentPriceMatch[1]) {
+        const parsed = parseFloat(currentPriceMatch[1]);
+        if (!isNaN(parsed) && parsed > 0) {
+          price = parsed;
+        }
+      }
+
+      const prevPriceMatch = html.match(/"previous_price"\s*:\s*\{\s*"value"\s*:\s*([0-9.]+)/i);
+      if (prevPriceMatch && prevPriceMatch[1]) {
+        const parsed = parseFloat(prevPriceMatch[1]);
+        if (!isNaN(parsed) && parsed > 0) {
+          originalPrice = parsed;
+        }
+      }
+
+      // Price extraction: Strategy 2 - Meta tags
       if (price === null) {
         const metaPrice =
-          html.match(/<meta\s+property=["']product:price:amount["']\s+content=["']([^"']+)["']/i) ||
+          html.match(/<meta\s+property=["'](?:product:price:amount|og:price:amount)["']\s+content=["']([^"']+)["']/i) ||
           html.match(/<meta\s+itemprop=["']price["']\s+content=["']([^"']+)["']/i);
         if (metaPrice && metaPrice[1]) {
           const parsed = parseFloat(metaPrice[1].replace(',', '.'));
@@ -403,7 +421,34 @@ app.post('/api/scrape-mercadolivre', async (req, res) => {
         }
       }
 
-      // Check Schema JSON-LD for price
+      // Price extraction: Strategy 3 - Andes UI classes in HTML (support any trailing attributes before >)
+      if (price === null) {
+        const fractionMatch = html.match(/class=["'][^"']*andes-money-amount__fraction[^"']*["'][^>]*>([^<]+)<\/span>/i);
+        const centsMatch = html.match(/class=["'][^"']*andes-money-amount__cents[^"']*["'][^>]*>([^<]+)<\/span>/i);
+        if (fractionMatch && fractionMatch[1]) {
+          const rawNum = fractionMatch[1].replace(/\./g, '');
+          const cents = centsMatch && centsMatch[1] ? `.${centsMatch[1]}` : '.00';
+          const parsed = parseFloat(`${rawNum}${cents}`);
+          if (!isNaN(parsed) && parsed > 0) {
+            price = parsed;
+          }
+        }
+      }
+
+      // Price extraction: Strategy 4 - aria-label with reais and centavos
+      if (price === null) {
+        const ariaMatch = html.match(/aria-label=["'](\d+)[\s.,]*reais(?:\s*com\s*(\d+)\s*centavos)?["']/i);
+        if (ariaMatch && ariaMatch[1]) {
+          const reais = ariaMatch[1];
+          const cents = ariaMatch[2] ? `.${ariaMatch[2]}` : '.00';
+          const parsed = parseFloat(`${reais}${cents}`);
+          if (!isNaN(parsed) && parsed > 0) {
+            price = parsed;
+          }
+        }
+      }
+
+      // Price extraction: Strategy 5 - Check Schema JSON-LD for price
       if (price === null) {
         const jsonLdRegex = /<script\s+type=["']application\/ld\+json["']>([\s\S]*?)<\/script>/gi;
         let match;
@@ -429,20 +474,6 @@ app.post('/api/scrape-mercadolivre', async (req, res) => {
               }
             }
           } catch (e) {}
-        }
-      }
-
-      // Check Andes UI classes in HTML for price
-      if (price === null) {
-        const fractionMatch = html.match(/class=["'][^"']*andes-money-amount__fraction[^"']*["']>([^<]+)<\/span>/i);
-        const centsMatch = html.match(/class=["'][^"']*andes-money-amount__cents[^"']*["']>([^<]+)<\/span>/i);
-        if (fractionMatch && fractionMatch[1]) {
-          const rawNum = fractionMatch[1].replace(/\./g, '');
-          const cents = centsMatch && centsMatch[1] ? `.${centsMatch[1]}` : '.00';
-          const parsed = parseFloat(`${rawNum}${cents}`);
-          if (!isNaN(parsed) && parsed > 0) {
-            price = parsed;
-          }
         }
       }
 
@@ -489,20 +520,27 @@ app.post('/api/scrape-mercadolivre', async (req, res) => {
       title = 'Produto Selecionado Mercado Livre';
     }
 
-    if (!price || price <= 0) {
-      price = 69.90;
-    }
-
     if (!image) {
       image = 'https://images.unsplash.com/photo-1582798358481-d199fb7347bb?auto=format&fit=crop&w=800&q=80';
     }
 
     // Truncate and clean description to readable length
-    if (!description) {
+    const isGenericDesc =
+      !description ||
+      description.includes('Visite a página') ||
+      description.includes('encontre todos os produtos de PRATOEPATA') ||
+      description.includes('Crie sua conta');
+
+    if (isGenericDesc) {
       description = `Produto de alta qualidade selecionado no Mercado Livre. Indicado para a alimentação, saúde e bem-estar animal e de seus tutores. Curadoria Prato & Pata.`;
     } else if (description.length > 320) {
       description = description.substring(0, 310) + '...';
     }
+
+    // Formatted price strings - never invent or default to 69.90
+    const priceFormatted = price !== null && price > 0 ? price.toFixed(2).replace('.', ',') : null;
+    const originalPriceFormatted =
+      typeof originalPrice === 'number' && originalPrice > 0 ? originalPrice.toFixed(2).replace('.', ',') : null;
 
     // Step 4: Infer targetAudience & category from text
     const textCorpus = `${title} ${description}`.toLowerCase();
@@ -560,7 +598,9 @@ app.post('/api/scrape-mercadolivre', async (req, res) => {
       data: {
         title,
         price,
-        priceFormatted: price.toFixed(2).replace('.', ','),
+        priceFormatted,
+        originalPrice,
+        originalPriceFormatted,
         image,
         description,
         targetAudience,
