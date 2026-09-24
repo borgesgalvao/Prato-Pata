@@ -24,29 +24,43 @@ export const ShopSection: React.FC<ShopSectionProps> = ({
   const [selectedAudience, setSelectedAudience] = useState<TargetAudience | 'todos'>('todos');
   const [sortBy, setSortBy] = useState<'relevance' | 'price-asc' | 'price-desc' | 'rating'>('relevance');
   const [maxPrice, setMaxPrice] = useState<number>(500);
-  const [headerHeight, setHeaderHeight] = useState<number>(120);
-
-  useEffect(() => {
-    const updateHeaderHeight = () => {
-      const headerEl = document.querySelector('header');
-      if (headerEl) {
-        setHeaderHeight(headerEl.offsetHeight);
-      }
-    };
-    updateHeaderHeight();
-    window.addEventListener('resize', updateHeaderHeight);
-    return () => window.removeEventListener('resize', updateHeaderHeight);
-  }, []);
 
   const categories: { id: ProductCategory; label: string; icon: string }[] = [
     { id: 'todos', label: 'Todos os Itens', icon: '🌟' },
-    { id: 'pet-caes', label: 'Coisinhas pro cão', icon: '🐕' },
-    { id: 'pet-gatos', label: 'Coisinhas pro gato', icon: '🐈' },
-    { id: 'cozinha-saudavel', label: 'Cozinha', icon: '🍳' },
-    { id: 'snacks-naturais', label: 'Comidas', icon: '🥩' },
-    { id: 'utensilios-ecologicos', label: 'Coisas', icon: '🥣' },
+    { id: 'snacks-naturais', label: 'Snacks Naturais', icon: '🥩' },
+    { id: 'suplementos', label: 'Suplementos', icon: '💊' },
+    { id: 'higiene', label: 'Higiene & Cuidados', icon: '🧼' },
+    { id: 'pet-caes', label: 'Cães & Acessórios', icon: '🐕' },
+    { id: 'pet-gatos', label: 'Gatos & Bem-Estar', icon: '🐈' },
+    { id: 'cozinha-saudavel', label: 'Cozinha Saudável', icon: '🍳' },
+    { id: 'utensilios-ecologicos', label: 'Comedouros & Potes', icon: '🥣' },
     { id: 'kits-duo', label: 'Kits Duo Tutor & Pet', icon: '🎁' },
   ];
+
+  // Dynamic counts for each category
+  const categoryCounts = useMemo(() => {
+    const counts: Record<string, number> = { todos: 0 };
+    products.forEach((p) => {
+      if (!p.affiliateUrl || p.affiliateUrl.trim() === '') return;
+      counts.todos = (counts.todos || 0) + 1;
+      counts[p.category] = (counts[p.category] || 0) + 1;
+    });
+    return counts;
+  }, [products]);
+
+  const handleSelectCategory = (catId: ProductCategory) => {
+    setSelectedCategory(catId);
+    // If the category has items belonging to another audience filter currently selected,
+    // harmonize by setting selectedAudience to 'todos' so products immediately show
+    if (catId !== 'todos' && selectedAudience !== 'todos') {
+      const match = products.some(
+        (p) => p.category === catId && p.targetAudience === selectedAudience
+      );
+      if (!match) {
+        setSelectedAudience('todos');
+      }
+    }
+  };
 
   // Filter & Sort logic
   const filteredProducts = useMemo(() => {
@@ -96,11 +110,10 @@ export const ShopSection: React.FC<ShopSectionProps> = ({
 
   return (
     <section id="shop-main-section" className="py-6 sm:py-8 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-      {/* Sticky Header with Target Audience, Categories, and Search/Filters Toolbar (Compact on mobile) */}
+      {/* Shop Header with Target Audience, Categories, and Search/Filters Toolbar (Scrolls naturally with content on mobile) */}
       <div
         id="shop-fixed-header"
-        style={{ top: `${headerHeight}px` }}
-        className="relative sm:sticky sm:z-20 bg-[#FBF9F5]/95 backdrop-blur-md -mx-4 px-3 sm:-mx-6 sm:px-6 lg:-mx-8 lg:px-8 py-2 sm:py-3 mb-3 sm:mb-6 border-b border-[#EBE4D8] transition-all shadow-xs"
+        className="relative w-full bg-[#FBF9F5]/95 backdrop-blur-md -mx-4 px-3 sm:-mx-6 sm:px-6 lg:-mx-8 lg:px-8 py-2.5 sm:py-3.5 mb-3 sm:mb-6 border-b border-[#EBE4D8] transition-all shadow-xs"
       >
         {/* Target Audience Switcher Pills */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1.5 sm:gap-3 mb-2 sm:mb-3">
@@ -117,7 +130,7 @@ export const ShopSection: React.FC<ShopSectionProps> = ({
             <button
               id="filter-audience-todos"
               onClick={() => setSelectedAudience('todos')}
-              className={`px-2.5 py-1 rounded-lg text-[11px] sm:text-xs font-bold transition-all whitespace-nowrap ${
+              className={`px-2.5 py-1 rounded-lg text-[11px] sm:text-xs font-bold transition-all whitespace-nowrap cursor-pointer ${
                 selectedAudience === 'todos'
                   ? 'bg-white text-[#2D2A26] shadow-xs'
                   : 'text-[#6B655B] hover:text-[#2D2A26]'
@@ -128,7 +141,7 @@ export const ShopSection: React.FC<ShopSectionProps> = ({
             <button
               id="filter-audience-pet"
               onClick={() => setSelectedAudience('pet')}
-              className={`px-2.5 py-1 rounded-lg text-[11px] sm:text-xs font-bold transition-all whitespace-nowrap flex items-center gap-1 ${
+              className={`px-2.5 py-1 rounded-lg text-[11px] sm:text-xs font-bold transition-all whitespace-nowrap flex items-center gap-1 cursor-pointer ${
                 selectedAudience === 'pet'
                   ? 'bg-[#24572D] text-white shadow-xs'
                   : 'text-[#6B655B] hover:text-[#2D2A26]'
@@ -140,7 +153,7 @@ export const ShopSection: React.FC<ShopSectionProps> = ({
             <button
               id="filter-audience-tutor"
               onClick={() => setSelectedAudience('tutor')}
-              className={`px-2.5 py-1 rounded-lg text-[11px] sm:text-xs font-bold transition-all whitespace-nowrap flex items-center gap-1 ${
+              className={`px-2.5 py-1 rounded-lg text-[11px] sm:text-xs font-bold transition-all whitespace-nowrap flex items-center gap-1 cursor-pointer ${
                 selectedAudience === 'tutor'
                   ? 'bg-[#C87941] text-white shadow-xs'
                   : 'text-[#6B655B] hover:text-[#2D2A26]'
@@ -152,7 +165,7 @@ export const ShopSection: React.FC<ShopSectionProps> = ({
             <button
               id="filter-audience-duo"
               onClick={() => setSelectedAudience('duo')}
-              className={`px-2.5 py-1 rounded-lg text-[11px] sm:text-xs font-bold transition-all whitespace-nowrap flex items-center gap-1 ${
+              className={`px-2.5 py-1 rounded-lg text-[11px] sm:text-xs font-bold transition-all whitespace-nowrap flex items-center gap-1 cursor-pointer ${
                 selectedAudience === 'duo'
                   ? 'bg-[#1E4D70] text-white shadow-xs'
                   : 'text-[#6B655B] hover:text-[#2D2A26]'
@@ -164,23 +177,52 @@ export const ShopSection: React.FC<ShopSectionProps> = ({
           </div>
         </div>
 
-        {/* Category Horizontal Scrolling List */}
-        <div className="flex items-center gap-1.5 sm:gap-2 overflow-x-auto pb-1 sm:pb-2 mb-2 sm:mb-3 no-scrollbar">
-          {categories.map((cat) => (
-            <button
-              key={cat.id}
-              id={`filter-category-${cat.id}`}
-              onClick={() => setSelectedCategory(cat.id)}
-              className={`px-2.5 py-1 sm:px-3.5 sm:py-1.5 rounded-lg sm:rounded-xl text-[11px] sm:text-xs font-semibold whitespace-nowrap flex items-center gap-1 border transition-all duration-200 ${
-                selectedCategory === cat.id
-                  ? 'bg-[#435B47] text-white border-[#435B47] shadow-xs'
-                  : 'bg-white text-[#544F46] border-[#EBE4D8] hover:border-[#D5CDBD] hover:bg-[#FAF7F0]'
-              }`}
-            >
-              <span>{cat.icon}</span>
-              <span>{cat.label}</span>
-            </button>
-          ))}
+        {/* Category Filter Buttons */}
+        <div className="mb-2 sm:mb-3">
+          <div className="flex items-center justify-between gap-2 mb-1.5 px-0.5">
+            <span className="text-[11px] font-bold uppercase tracking-wider text-[#6B655B] flex items-center gap-1">
+              <span>Filtrar por Categoria:</span>
+            </span>
+            {selectedCategory !== 'todos' && (
+              <button
+                type="button"
+                onClick={() => setSelectedCategory('todos')}
+                className="text-[11px] text-[#C87941] hover:underline font-bold cursor-pointer"
+              >
+                Ver todas as categorias
+              </button>
+            )}
+          </div>
+          <div className="flex items-center gap-1.5 sm:gap-2 overflow-x-auto pb-1 sm:pb-1.5 no-scrollbar scroll-smooth">
+            {categories.map((cat) => {
+              const isSelected = selectedCategory === cat.id;
+              const count = categoryCounts[cat.id] || 0;
+              return (
+                <button
+                  key={cat.id}
+                  id={`filter-category-${cat.id}`}
+                  onClick={() => handleSelectCategory(cat.id)}
+                  className={`px-2.5 py-1.5 sm:px-3 sm:py-1.5 rounded-lg sm:rounded-xl text-[11px] sm:text-xs font-semibold whitespace-nowrap flex items-center gap-1.5 border transition-all duration-200 cursor-pointer shrink-0 ${
+                    isSelected
+                      ? 'bg-[#435B47] text-white border-[#435B47] shadow-xs scale-[1.02]'
+                      : 'bg-white text-[#454037] border-[#E2DAD0] hover:border-[#C8BFB2] hover:bg-[#FAF7F0] active:scale-95'
+                  }`}
+                >
+                  <span className="text-xs sm:text-sm">{cat.icon}</span>
+                  <span>{cat.label}</span>
+                  <span
+                    className={`text-[10px] px-1.5 py-0.2 rounded-full font-bold transition-colors ${
+                      isSelected
+                        ? 'bg-white/20 text-white'
+                        : 'bg-[#F2ECE1] text-[#787062]'
+                    }`}
+                  >
+                    {count}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
         </div>
 
         {/* Toolbar: Active Search Indicator, Price Slider & Sort */}
@@ -232,7 +274,7 @@ export const ShopSection: React.FC<ShopSectionProps> = ({
                 id="shop-sort-select"
                 value={sortBy}
                 onChange={(e) => setSortBy(e.target.value as any)}
-                className="bg-[#FAF7F0] border border-[#E0D8C8] rounded-lg px-2 py-1 text-[11px] sm:text-xs text-[#2D2A26] font-semibold focus:outline-none focus:ring-1 focus:ring-[#435B47]"
+                className="bg-[#FAF7F0] border border-[#E0D8C8] rounded-lg px-2 py-1 text-[11px] sm:text-xs text-[#2D2A26] font-semibold focus:outline-none focus:ring-1 focus:ring-[#435B47] cursor-pointer"
               >
                 <option value="relevance">Destaques</option>
                 <option value="price-asc">Menor Preço</option>
@@ -253,7 +295,7 @@ export const ShopSection: React.FC<ShopSectionProps> = ({
           <button
             id="shop-reset-filters-btn"
             onClick={resetFilters}
-            className="flex items-center gap-1 text-[#C87941] hover:underline font-bold"
+            className="flex items-center gap-1 text-[#C87941] hover:underline font-bold cursor-pointer"
           >
             <RefreshCw className="w-3 h-3" />
             <span>Limpar filtros</span>
@@ -261,9 +303,9 @@ export const ShopSection: React.FC<ShopSectionProps> = ({
         )}
       </div>
 
-      {/* Products Grid */}
+      {/* Products Grid - 2 columns on mobile, 3 on md, 4 on lg */}
       {filteredProducts.length > 0 ? (
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2.5 sm:gap-4 md:gap-6">
           {filteredProducts.map((product) => (
             <ProductCard
               key={product.id}

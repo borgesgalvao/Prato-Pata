@@ -1,0 +1,70 @@
+{
+  "entities": {
+    "Comment": {
+      "title": "Comment",
+      "description": "A public comment left by a blog reader on an article.",
+      "type": "object",
+      "properties": {
+        "articleId": {
+          "type": "string",
+          "description": "ID of the blog article this comment belongs to"
+        },
+        "author": {
+          "type": "string",
+          "description": "Name of the comment author"
+        },
+        "petName": {
+          "type": "string",
+          "description": "Optional name and breed of the author's pet"
+        },
+        "content": {
+          "type": "string",
+          "description": "Content of the comment"
+        },
+        "likes": {
+          "type": "number",
+          "description": "Number of helpful likes for this comment"
+        },
+        "createdAt": {
+          "type": "string",
+          "description": "ISO date string when the comment was created"
+        }
+      },
+      "required": ["articleId", "author", "content", "likes", "createdAt"]
+    },
+    "ArticleReactions": {
+      "title": "ArticleReactions",
+      "description": "Counters for article reactions",
+      "type": "object",
+      "properties": {
+        "articleId": {
+          "type": "string",
+          "description": "ID of the article"
+        },
+        "likes": {
+          "type": "number",
+          "description": "Number of heart reactions"
+        },
+        "pawReactions": {
+          "type": "number",
+          "description": "Number of paw reactions"
+        },
+        "usefulReactions": {
+          "type": "number",
+          "description": "Number of useful reactions"
+        }
+      },
+      "required": ["articleId", "likes", "pawReactions", "usefulReactions"]
+    }
+  },
+  "firestore": {
+    "/comments/{commentId}": {
+      "schema": { "$ref": "#/entities/Comment" },
+      "description": "Collection of visitor comments on blog articles"
+    },
+    "/article_reactions/{articleId}": {
+      "schema": { "$ref": "#/entities/ArticleReactions" },
+      "description": "Aggregated community reactions for blog articles"
+    }
+  }
+}

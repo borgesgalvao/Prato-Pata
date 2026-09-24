@@ -1,6 +1,6 @@
 import { Product } from "../types";
 
-export const CATALOG_VERSION = 1790191115507;
+export const CATALOG_VERSION = 1790192500000;
 
 export const INITIAL_PRODUCTS: Product[] = [
   {
@@ -258,6 +258,122 @@ export const INITIAL_PRODUCTS: Product[] = [
     "inStock": true,
     "featured": false,
     "affiliateUrl": "https://meli.la/1VyAPJp",
+    "affiliatePlatform": "mercado_livre"
+  },
+  {
+    "id": "ml-prod-suplemento-organact-pro",
+    "name": "Suplemento Probiótico & Prebiótico Pet Organact Pró-Gastro 100g",
+    "category": "suplementos",
+    "targetAudience": "pet",
+    "price": 54.9,
+    "originalPrice": 68,
+    "rating": 4.9,
+    "reviewsCount": 134,
+    "image": "https://http2.mlstatic.com/D_NQ_NP_772594-MLB92708006786_092025-O.webp",
+    "shortDescription": "Suplemento alimentar com probióticos e prebióticos para equilíbrio da microbiota e saúde digestiva de cães e gatos.",
+    "fullDescription": "Favorece a digestão, melhora a absorção de nutrientes e reforça a imunidade natural de cães e gatos sob dieta natural ou comercial.",
+    "highlights": [
+      "Com Saccharomyces cerevisiae e prebióticos MOS",
+      "Melhora a digestão e firmeza das fezes",
+      "Indicado para cães e gatos de qualquer idade",
+      "Compra Garantida no Mercado Livre"
+    ],
+    "specs": {
+      "materialOuComposicao": "Probióticos e Prebióticos em pó palatável",
+      "indicacao": "Cães e Gatos de todos os portes",
+      "origem": "Mercado Livre Oficial",
+      "cuidados": "Armazenar em local fresco, seco e ao abrigo da luz solar."
+    },
+    "inStock": true,
+    "featured": true,
+    "affiliateUrl": "https://meli.la/2S9mZ63",
+    "affiliatePlatform": "mercado_livre"
+  },
+  {
+    "id": "ml-prod-suplemento-omega3-pure",
+    "name": "Suplemento Ômega 3 Dog & Cat Pure EPA e DHA 1000mg 30 Cápsulas",
+    "category": "suplementos",
+    "targetAudience": "pet",
+    "price": 69.9,
+    "originalPrice": 85,
+    "rating": 5,
+    "reviewsCount": 92,
+    "image": "https://http2.mlstatic.com/D_NQ_NP_897523-MLB115581065312_092026-O.webp",
+    "shortDescription": "Óleo de peixe de águas profundas ultrapurificado com alta concentração de ácidos graxos essenciais.",
+    "fullDescription": "Fortalece a barreira cutânea, proporciona pelos sedosos e brilhantes, além de suporte cardiovascular e articular para pets.",
+    "highlights": [
+      "Rico em ácidos graxos essenciais EPA e DHA",
+      "Contribui para a saúde da pele, pelo e articulações",
+      "Livre de metais pesados com pureza atestada",
+      "Entrega Rápida Full pelo Mercado Livre"
+    ],
+    "specs": {
+      "materialOuComposicao": "Óleo de Peixe ultrapurificado em cápsulas moles",
+      "indicacao": "Cães e Gatos adultos e idosos",
+      "origem": "Mercado Livre Oficial",
+      "cuidados": "Pode ser administrado diretamente na boca ou misturado à refeição."
+    },
+    "inStock": true,
+    "featured": true,
+    "affiliateUrl": "https://meli.la/2cmV9go",
+    "affiliatePlatform": "mercado_livre"
+  },
+  {
+    "id": "ml-prod-shampoo-vegano-camomila",
+    "name": "Shampoo e Condicionador Vegano Aveia e Camomila Hipoalergênico 500ml",
+    "category": "higiene",
+    "targetAudience": "pet",
+    "price": 42.9,
+    "originalPrice": 56,
+    "rating": 4.9,
+    "reviewsCount": 88,
+    "image": "https://http2.mlstatic.com/D_NQ_NP_942852-MLA95966775523_102025-O.webp",
+    "shortDescription": "Fórmula natural hipoalergênica enriquecida com extratos botânicos para banho suave e hidratação profunda.",
+    "fullDescription": "Especialmente desenvolvido para pele sensível e alérgica. pH neutro fisiológico, sem sulfatos agressivos, parabenos ou corantes artificiais.",
+    "highlights": [
+      "100% Vegano, livre de sulfatos e parabenos",
+      "Extratos botânicos calmantes de camomila e aveia",
+      "Fragrância delicada e hipoalergênica que não incomoda o olfato",
+      "Curadoria de Higiene Natural Prato & Pata"
+    ],
+    "specs": {
+      "materialOuComposicao": "Extrato de Aveia, Óleo de Camomila, Base vegetal e pH neutro",
+      "indicacao": "Cães e Gatos de peles normais a sensíveis",
+      "origem": "Mercado Livre Oficial",
+      "cuidados": "Evitar contato direto com os olhos; enxaguar abundantemente."
+    },
+    "inStock": true,
+    "featured": true,
+    "affiliateUrl": "https://meli.la/18x7Cfn",
+    "affiliatePlatform": "mercado_livre"
+  },
+  {
+    "id": "ml-prod-balsamo-hidratante-patinhas",
+    "name": "Bálsamo Hidratante 100% Natural Para Coxins e Focinho Pet 50g",
+    "category": "higiene",
+    "targetAudience": "pet",
+    "price": 34.5,
+    "originalPrice": 45,
+    "rating": 4.8,
+    "reviewsCount": 64,
+    "image": "https://http2.mlstatic.com/D_NQ_NP_607150-MLB85970600323_062025-O.webp",
+    "shortDescription": "Pomada regeneradora vegana para hidratação intensiva e proteção de almofadinhas ressecadas e focinho.",
+    "fullDescription": "Feito com cera de candelila, manteiga de karité e óleo de coco extravirgem. Cria uma barreira protetora contra pisos quentes e asperezas.",
+    "highlights": [
+      "Ingredientes 100% comestíveis e seguros ao lamber",
+      "Cura rachaduras e hidrata intensamente os coxins",
+      "Fácil aplicação sem deixar resíduos gordurosos",
+      "Envio Full Seguro Mercado Livre"
+    ],
+    "specs": {
+      "materialOuComposicao": "Manteiga de Karité, Cera Vegetal e Óleo de Coco",
+      "indicacao": "Cães e Gatos de todas as raças",
+      "origem": "Mercado Livre Oficial",
+      "cuidados": "Aplicar de 1 a 2 vezes ao dia nas almofadinhas limpas."
+    },
+    "inStock": true,
+    "featured": false,
+    "affiliateUrl": "https://meli.la/23kD8eT",
     "affiliatePlatform": "mercado_livre"
   }
 ];

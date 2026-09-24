@@ -2,10 +2,12 @@ export type TargetAudience = 'pet' | 'tutor' | 'duo';
 
 export type ProductCategory = 
   | 'todos'
+  | 'snacks-naturais'
+  | 'suplementos'
+  | 'higiene'
   | 'pet-caes'
   | 'pet-gatos'
   | 'cozinha-saudavel'
-  | 'snacks-naturais'
   | 'utensilios-ecologicos'
   | 'kits-duo';
 
